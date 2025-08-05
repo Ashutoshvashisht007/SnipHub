@@ -1,103 +1,79 @@
-import Image from "next/image";
+"use client";
+
+import DataObjectIcon from "@mui/icons-material/DataObject";
+import { mainColor } from "@/Color";
+import { useAuth } from "@clerk/nextjs";
+import Link from "next/link";
+
 
 export default function Home() {
   return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
-
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+    <div className="poppins">
+      <Navbar />
+      <CTASection />
     </div>
   );
+}
+
+function Navbar() {
+  return (
+    <div className="flex m-5 max-sm:mt-9 mx-8 item-center justify-between max-sm:flex-col">
+      <Logo />
+      <Button />
+    </div>
+  )
+}
+
+function Logo() {
+  return (
+    <div className="flex gap-2 items-center">
+      <div style={{ backgroundColor: mainColor }} className={"p-[6px] rounded-md"}>
+        <DataObjectIcon sx={{ fontSize: 27, color: "black" }} />
+      </div>
+      <div className="flex gap-1 text-[19px]">
+        <span style={{ color: mainColor }} className={`font-bold `}>Snip Hub</span>
+      </div>
+    </div>
+  )
+}
+
+function Button() {
+  const { userId } = useAuth();
+  return (
+    <div className="max-sm:w-full">
+      {userId ?
+        (
+          <Link href="/my-notes">
+            <button className="mx-sm:w-full bg-[#8338ec] p-[8px] px-6 text-sm text-white rounded-md">Access To The App</button>
+          </Link>
+        )
+        : (<div className="flex gap-2 max-sm:flex-col max-sm:w-[60%] max-sm:mt-8">
+          <button style={{ backgroundColor: mainColor }} className={`max-sm:w-full p-[8px] px-6 text-sm text-white rounded-md cursor-pointer`}>
+            <Link href="/sign-in">Sign In</Link>
+          </button>
+          <Link href="/sign-up">
+            <button className={`text-sm border border-[#8338ec] text-[#8338ec] hover:bg-[#8338ec] hover:text-white p-[8px] px-6 rounded-md cursor-pointer`}>
+              Sign Up
+            </button>
+          </Link>
+        </div>)}
+    </div>
+  )
+}
+
+function CTASection() {
+  return (
+    <div className="flex flex-col mx-16 items-center mt-[120px] gap-6">
+      <h2 className="font-bold text-2xl text-center">
+        Organize Your Code Snippets
+      </h2>
+      <p className="text-center text-gray-400 text-sm w-[450px] max-sm:w-full ">
+        SnipHub is a platform designed to help you store, organize, and share your code snippets with ease.
+      </p>
+
+      <button className="block px-9 py-3 text-sm font-medium text-white transition focus:outline-none rounded-md cursor-pointer" style={{ backgroundColor: mainColor }} type="button">
+        Get Started
+      </button>
+    </div>
+  )
 }
