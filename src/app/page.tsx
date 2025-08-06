@@ -47,12 +47,14 @@ function Button() {
             <button className="mx-sm:w-full bg-[#8338ec] p-[8px] px-6 text-sm text-white rounded-md">Access To The App</button>
           </Link>
         )
-        : (<div className="flex gap-2 max-sm:flex-col max-sm:w-[60%] max-sm:mt-8">
-          <button style={{ backgroundColor: mainColor }} className={`max-sm:w-full p-[8px] px-6 text-sm text-white rounded-md cursor-pointer`}>
-            <Link href="/sign-in">Sign In</Link>
-          </button>
+        : (<div className="flex gap-2 max-sm:flex-col max-sm:w-full max-sm:mt-8">
+          <Link href="/sign-in">
+            <button style={{ backgroundColor: mainColor }} className={`max-sm:w-full p-[8px] px-6 text-sm text-white rounded-md cursor-pointer`}>
+              Sign In
+            </button>
+          </Link>
           <Link href="/sign-up">
-            <button className={`text-sm border border-[#8338ec] text-[#8338ec] hover:bg-[#8338ec] hover:text-white p-[8px] px-6 rounded-md cursor-pointer`}>
+            <button className={`text-sm border border-[#8338ec] text-[#8338ec] hover:bg-[#8338ec] hover:text-white p-[8px] px-6 rounded-md cursor-pointer max-sm:w-full`}>
               Sign Up
             </button>
           </Link>
@@ -62,6 +64,7 @@ function Button() {
 }
 
 function CTASection() {
+  const { userId } = useAuth();
   return (
     <div className="flex flex-col mx-16 items-center mt-[120px] gap-6">
       <h2 className="font-bold text-2xl text-center">
@@ -70,10 +73,19 @@ function CTASection() {
       <p className="text-center text-gray-400 text-sm w-[450px] max-sm:w-full ">
         SnipHub is a platform designed to help you store, organize, and share your code snippets with ease.
       </p>
-
-      <button className="block px-9 py-3 text-sm font-medium text-white transition focus:outline-none rounded-md cursor-pointer" style={{ backgroundColor: mainColor }} type="button">
-        Get Started
-      </button>
+      {userId ?
+        (
+          <Link href="/my-notes">
+            <button className="mx-sm:w-full bg-[#8338ec] p-[8px] px-6 text-sm text-white rounded-md">Access To The App</button>
+          </Link>
+        )
+        :
+        <Link href="/sign-in">
+          <button className="block px-9 py-3 text-sm font-medium text-white transition focus:outline-none rounded-md cursor-pointer" style={{ backgroundColor: mainColor }} type="button">
+            Get Started
+          </button>
+        </Link>
+      }
     </div>
   )
 }
