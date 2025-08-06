@@ -5,7 +5,8 @@ import User from '@/app/Models/UserSchema';
 import connect from '@/app/lib/connect';
 
 export async function POST(req: Request){
-    const WEBHOOK_SECRET = process.env.CLERK_WEBHOOK_SECRET;
+    const WEBHOOK_SECRET = process.env.WEBHOOK_SECRET;
+    console.log("📩 Webhook triggered");
 
     if(!WEBHOOK_SECRET) {
         return new Response('Webhook secret not configured', { status: 500 });
