@@ -19,10 +19,29 @@ function SearchBar() {
 }
 
 function AddSnippetButton() {
+    const {openContentNoteObject: {setOpenContentNote}, selectedNoteObject: {setSelectedNote}, allNotesObject: {allNotes, setAllNotes}} = useGlobalContext();
+
+    const openTheContentNote = (e: React.MouseEvent<HTMLDivElement>) => {
+        const newSingleNote = {
+            id: "5",
+            title: "",
+            creationDate: "",
+            tags: [],
+            description: "",
+            code: "",
+            isFavorite: false,
+            language: "",
+        };
+
+        setAllNotes([...allNotes,newSingleNote]);
+        setSelectedNote(newSingleNote);
+        setOpenContentNote(true);
+    }
+
     return (
         <div className="absolute flex gap-2 px-3 rounded-3xl bg-purple-600 p-1 text-[13px] text-white top-[5px] right-[6px] items-center cursor-pointer select-none">
             <div className="font-bold">+</div>
-            <div className="max-md:hidden">Snippet</div>
+            <div onClick={openTheContentNote} className="max-md:hidden">Snippet</div>
         </div>
     )
 }
