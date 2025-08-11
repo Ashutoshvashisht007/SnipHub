@@ -1,5 +1,5 @@
 export interface singleNoteType {
-    id: string;
+    _id: string;
     title: string;
     isFavorite: boolean;
     tags: string[];
@@ -20,4 +20,9 @@ export interface DarkModeType {
     id: number;
     icon: React.ReactNode;
     isSelected: boolean;
+}
+
+export interface SingleTagType{
+    _id: string;
+    name: string;
 }

@@ -7,7 +7,8 @@ import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined
 import LogoutIcon from "@mui/icons-material/Logout";
 import LightModeIcon from "@mui/icons-material/LightMode";
 import DarkModeIcon from "@mui/icons-material/DarkMode";
-import { DarkModeType, SidebarMenu, singleNoteType } from "@/app/Types";
+import { DarkModeType, SidebarMenu, singleNoteType, SingleTagType } from "@/app/Types";
+import { v4 as uuidv4 } from "uuid";
 
 interface GlobalContextType {
     sideBarMenuObject: {
@@ -37,6 +38,18 @@ interface GlobalContextType {
     selectedNoteObject: {
         selectedNote: singleNoteType | null,
         setSelectedNote: React.Dispatch<React.SetStateAction<singleNoteType | null>>;
+    },
+    isNewNoteObject: {
+        isNewNote: boolean,
+        setIsNewNote: React.Dispatch<React.SetStateAction<boolean>>;
+    },
+    allTagsObject: {
+        alltags: SingleTagType[],
+        setAllTags: React.Dispatch<React.SetStateAction<SingleTagType[]>>;
+    },
+    selctedTagsObject: {
+        selectedTags: SingleTagType[],
+        setSelectedTags: React.Dispatch<React.SetStateAction<SingleTagType[]>>;
     }
 }
 
@@ -68,6 +81,18 @@ const ContextProvider = createContext<GlobalContextType>({
     selectedNoteObject: {
         selectedNote: null,
         setSelectedNote: () => { }
+    },
+    isNewNoteObject: {
+        isNewNote: false,
+        setIsNewNote: () => { }
+    },
+    allTagsObject: {
+        alltags: [],
+        setAllTags: () => { }
+    },
+    selctedTagsObject:{
+        selectedTags: [],
+        setSelectedTags: ()=> {}
     }
 })
 
@@ -118,7 +143,10 @@ export default function GlobalContextProvider({
     const [openContentNote, setOpenContentNode] = useState<boolean>(false);
     const [isMobile, setIsMobile] = useState<boolean>(false);
     const [allNotes, setAllNotes] = useState<singleNoteType[]>([]);
-    const [selectedNote,setSelectedNote] = useState<singleNoteType | null>(null);
+    const [selectedNote, setSelectedNote] = useState<singleNoteType | null>(null);
+    const [isNewNote, setIsNewNote] = useState(false);
+    const [alltags,setAllTags] = useState<SingleTagType[]>([]);
+    const [selectedTags, setSelectedTags] = useState<SingleTagType[]>([])
 
     const handleResize = () => {
         setIsMobile(window.innerWidth <= 640);
@@ -135,7 +163,7 @@ export default function GlobalContextProvider({
     useEffect(() => {
         function updateAllNotes() {
             const allNotes = [{
-                id: "1",
+                _id: "1",
                 title: "Sample Note",
                 isFavorite: false,
                 tags: ["tag1", "tag2"],
@@ -147,7 +175,7 @@ export default function GlobalContextProvider({
                 creationDate: new Date().toISOString()
             },
             {
-                id: "2",
+                _id: "2",
                 title: "Another Note",
                 isFavorite: true,
                 tags: ["tag3"],
@@ -163,11 +191,41 @@ export default function GlobalContextProvider({
             setTimeout(() => {
                 setAllNotes(allNotes);
             }, 1200);
+            }
+            function updateAllTags() {
+                const allTags = [
+                    {
+                        _id: uuidv4(), name: "tag1"
+                    },
+                    {
+                        _id: uuidv4(), name: "tag2"
+                    },
+                    {
+                        _id: uuidv4(), name: "tag3"
+                    },
+                    {
+                        _id: uuidv4(), name: "tag4"
+                    },
+                    {
+                        _id: uuidv4(), name: "tag5"
+                    },
+                    {
+                        _id: uuidv4(), name: "tag6"
+                    },
+                ];
+
+                setAllTags(allTags);
         }
 
         updateAllNotes();
+        updateAllTags();
 
     }, [])
+
+    // useEffect(()=> {
+    //     setSelectedTags(selectedNote?.tags || []);
+    // },[selectedNote])
+
 
     return (
         <ContextProvider.Provider value={{
@@ -198,6 +256,18 @@ export default function GlobalContextProvider({
             selectedNoteObject: {
                 selectedNote,
                 setSelectedNote
+            },
+            isNewNoteObject: {
+                isNewNote,
+                setIsNewNote
+            },
+            allTagsObject:{
+                alltags,
+                setAllTags
+            },
+            selctedTagsObject: {
+                selectedTags,
+                setSelectedTags
             }
         }}>
             {children}

@@ -2,6 +2,7 @@
 
 import SearchIcon from "@mui/icons-material/Search";
 import { useGlobalContext } from "../../../../../../ContextApi";
+import {v4 as uuidv4} from "uuid";
 
 function SearchBar() {
 
@@ -19,11 +20,11 @@ function SearchBar() {
 }
 
 function AddSnippetButton() {
-    const {openContentNoteObject: {setOpenContentNote}, selectedNoteObject: {setSelectedNote}, allNotesObject: {allNotes, setAllNotes}} = useGlobalContext();
+    const {openContentNoteObject: {setOpenContentNote}, selectedNoteObject: {setSelectedNote}, allNotesObject: {allNotes, setAllNotes}, isNewNoteObject: {isNewNote, setIsNewNote}} = useGlobalContext();
 
     const openTheContentNote = (e: React.MouseEvent<HTMLDivElement>) => {
         const newSingleNote = {
-            id: "5",
+            _id: uuidv4(),
             title: "",
             creationDate: "",
             tags: [],
@@ -33,15 +34,17 @@ function AddSnippetButton() {
             language: "",
         };
 
-        setAllNotes([...allNotes,newSingleNote]);
+        // setAllNotes([...allNotes,newSingleNote]);
+        setIsNewNote(true)
         setSelectedNote(newSingleNote);
         setOpenContentNote(true);
     }
 
     return (
-        <div className="absolute flex gap-2 px-3 rounded-3xl bg-purple-600 p-1 text-[13px] text-white top-[5px] right-[6px] items-center cursor-pointer select-none">
+        <div className="absolute flex gap-2 px-3 rounded-3xl bg-purple-600 p-1 text-[13px] text-white top-[5px] right-[6px] items-center cursor-pointer select-none"
+        onClick={openTheContentNote}>
             <div className="font-bold">+</div>
-            <div onClick={openTheContentNote} className="max-md:hidden">Snippet</div>
+            <div className="max-md:hidden">Snippet</div>
         </div>
     )
 }

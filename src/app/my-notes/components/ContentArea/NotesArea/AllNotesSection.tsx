@@ -4,7 +4,6 @@ import React from 'react'
 import { useGlobalContext } from '../../../../../../ContextApi'
 import FavoriteBorderOutlinedIcon from '@mui/icons-material/FavoriteBorderOutlined';
 import SyntaxHighlighter from 'react-syntax-highlighter';
-import language from 'react-syntax-highlighter/dist/esm/languages/hljs/1c';
 import { materialLight, oneDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { SiJavascript } from 'react-icons/si';
 import DeleteRoundedIcon from '@mui/icons-material/DeleteRounded';
@@ -17,7 +16,7 @@ const AllNotesSection = () => {
     return (
         <div className='mt-5 flex flex-wrap gap-4'>
             {allNotes.map(note => (
-                <SingleNote key={note.id} note={note} />
+                <SingleNote key={note._id} note={note} />
             ))}
         </div>
     )
@@ -30,7 +29,7 @@ function SingleNote({ note }: { note: singleNoteType }) {
 
     return (
         <div className={`${darkMode[1].isSelected ? "bg-slate-800 text-white" : "bg-white"} ${openContentNote ? "w-full" : "w-[320px]"} max-sm:w-full rounded-md py-4`}>
-            <NoteHeader id={note.id} title={note.title} isFavirote={note.isFavorite} />
+            <NoteHeader _id={note._id} title={note.title} isFavirote={note.isFavorite} />
             <NoteDate date={note.creationDate} />
             <NoteTags tags={note.tags} />
             <NoteDescription description={note.description} />
@@ -40,7 +39,7 @@ function SingleNote({ note }: { note: singleNoteType }) {
     )
 }
 
-function NoteHeader({ title, isFavirote, id }: { title: string, isFavirote: boolean, id: string }) {
+function NoteHeader({ title, isFavirote, _id }: { title: string, isFavirote: boolean, _id: string }) {
 
     const { openContentNoteObject: { setOpenContentNote }, allNotesObject: { allNotes }, selectedNoteObject: { selectedNote, setSelectedNote } } = useGlobalContext();
 
@@ -48,7 +47,7 @@ function NoteHeader({ title, isFavirote, id }: { title: string, isFavirote: bool
         e.preventDefault();
         setOpenContentNote(true);
 
-        const temp = allNotes.find(note => note.id === id) || null;
+        const temp = allNotes.find(note => note._id === _id) || null;
         setSelectedNote(temp);
     }
 
