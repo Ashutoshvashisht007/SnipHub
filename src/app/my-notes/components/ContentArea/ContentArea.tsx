@@ -14,7 +14,7 @@ function ContentArea() {
     const { darkModeObject: { darkMode } } = useGlobalContext();
 
     return (
-        <div className={`w-full p-5 ${darkMode[1].isSelected ? "bg-gray-700" : "bg-slate-200 overflow-scroll"}`}>
+        <div className={`w-full p-5 ${darkMode[1].isSelected ? "bg-gray-700" : "bg-slate-200 overflow-x-scroll"}`}>
             <TopBar />
             <NotesArea />
         </div>

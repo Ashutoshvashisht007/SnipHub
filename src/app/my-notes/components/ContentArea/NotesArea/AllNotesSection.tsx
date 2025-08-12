@@ -7,7 +7,7 @@ import SyntaxHighlighter from 'react-syntax-highlighter';
 import { materialLight, oneDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { SiJavascript } from 'react-icons/si';
 import DeleteRoundedIcon from '@mui/icons-material/DeleteRounded';
-import { singleNoteType } from '@/app/Types';
+import { singleNoteType, SingleTagType } from '@/app/Types';
 
 const AllNotesSection = () => {
 
@@ -28,7 +28,7 @@ function SingleNote({ note }: { note: singleNoteType }) {
     const { darkModeObject: { darkMode }, openContentNoteObject: { openContentNote } } = useGlobalContext();
 
     return (
-        <div className={`${darkMode[1].isSelected ? "bg-slate-800 text-white" : "bg-white"} ${openContentNote ? "w-full" : "w-[320px]"} max-sm:w-full rounded-md py-4`}>
+        <div className={`${darkMode[1].isSelected ? "bg-slate-800 text-white" : "bg-white"} ${openContentNote ? "w-full" : "w-[320px]"} max-sm:w-full rounded-md py-4 overflow-hidden`}>
             <NoteHeader _id={note._id} title={note.title} isFavirote={note.isFavorite} />
             <NoteDate date={note.creationDate} />
             <NoteTags tags={note.tags} />
@@ -62,12 +62,12 @@ function NoteHeader({ title, isFavirote, _id }: { title: string, isFavirote: boo
     )
 }
 
-function NoteTags({ tags }: { tags: string[] }) {
+function NoteTags({ tags }: { tags: SingleTagType[]}) {
     return (
         <div className='text-slate-500 text-[11px] mx-4 flex-wrap flex gap-1 mt-4'>
-            {tags.map((tag, idx) => (
-                <span key={idx} className='bg-purple-100 text-purple-600 p-1 rounded-md px-2'>
-                    {tag}
+            {tags.map((tag) => (
+                <span key={tag._id} className='bg-purple-100 text-purple-600 p-1 rounded-md px-2'>
+                    {tag.name}
                 </span>
             ))}
         </div>

@@ -8,7 +8,9 @@ export default function page(){
     return (
         <div className='flex h-screen w-full flex-row'>
             <Sidebar />
-            <ContentArea />
+            <div className="flex-1 h-full overflow-y-auto">
+                <ContentArea />
+            </div>
             {/* <UserButton /> */}
 
         </div>

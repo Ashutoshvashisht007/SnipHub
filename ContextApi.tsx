@@ -90,9 +90,9 @@ const ContextProvider = createContext<GlobalContextType>({
         alltags: [],
         setAllTags: () => { }
     },
-    selctedTagsObject:{
+    selctedTagsObject: {
         selectedTags: [],
-        setSelectedTags: ()=> {}
+        setSelectedTags: () => { }
     }
 })
 
@@ -145,7 +145,7 @@ export default function GlobalContextProvider({
     const [allNotes, setAllNotes] = useState<singleNoteType[]>([]);
     const [selectedNote, setSelectedNote] = useState<singleNoteType | null>(null);
     const [isNewNote, setIsNewNote] = useState(false);
-    const [alltags,setAllTags] = useState<SingleTagType[]>([]);
+    const [alltags, setAllTags] = useState<SingleTagType[]>([]);
     const [selectedTags, setSelectedTags] = useState<SingleTagType[]>([])
 
     const handleResize = () => {
@@ -162,11 +162,17 @@ export default function GlobalContextProvider({
 
     useEffect(() => {
         function updateAllNotes() {
-            const allNotes = [{
-                _id: "1",
+            const AllNotes = [{
+                _id: uuidv4(),
                 title: "Sample Note",
                 isFavorite: false,
-                tags: ["tag1", "tag2"],
+                tags: [{
+                    _id: uuidv4(),
+                    name: "tag1"
+                }, {
+                    _id: uuidv4(),
+                    name: "tag2"
+                }],
                 description: "This is a sample note description.",
                 code: `console.log('Hello, world!');
                 functions a(){
@@ -175,10 +181,13 @@ export default function GlobalContextProvider({
                 creationDate: new Date().toISOString()
             },
             {
-                _id: "2",
+                _id: uuidv4(),
                 title: "Another Note",
                 isFavorite: true,
-                tags: ["tag3"],
+                tags: [{
+                    _id: uuidv4(),
+                    name: "tag3"
+                }],
                 description: "This is another note description.",
                 code: `function greet() {
                     console.log('Hello!');
@@ -189,32 +198,32 @@ export default function GlobalContextProvider({
             ];
 
             setTimeout(() => {
-                setAllNotes(allNotes);
+                setAllNotes(AllNotes);
             }, 1200);
-            }
-            function updateAllTags() {
-                const allTags = [
-                    {
-                        _id: uuidv4(), name: "tag1"
-                    },
-                    {
-                        _id: uuidv4(), name: "tag2"
-                    },
-                    {
-                        _id: uuidv4(), name: "tag3"
-                    },
-                    {
-                        _id: uuidv4(), name: "tag4"
-                    },
-                    {
-                        _id: uuidv4(), name: "tag5"
-                    },
-                    {
-                        _id: uuidv4(), name: "tag6"
-                    },
-                ];
+        }
+        function updateAllTags() {
+            const allTags = [
+                {
+                    _id: uuidv4(), name: "tag1"
+                },
+                {
+                    _id: uuidv4(), name: "tag2"
+                },
+                {
+                    _id: uuidv4(), name: "tag3"
+                },
+                {
+                    _id: uuidv4(), name: "tag4"
+                },
+                {
+                    _id: uuidv4(), name: "tag5"
+                },
+                {
+                    _id: uuidv4(), name: "tag6"
+                },
+            ];
 
-                setAllTags(allTags);
+            setAllTags(allTags);
         }
 
         updateAllNotes();
@@ -222,9 +231,9 @@ export default function GlobalContextProvider({
 
     }, [])
 
-    // useEffect(()=> {
-    //     setSelectedTags(selectedNote?.tags || []);
-    // },[selectedNote])
+    useEffect(() => {
+        setSelectedTags(selectedNote?.tags || []);
+    }, [selectedNote])
 
 
     return (
@@ -261,7 +270,7 @@ export default function GlobalContextProvider({
                 isNewNote,
                 setIsNewNote
             },
-            allTagsObject:{
+            allTagsObject: {
                 alltags,
                 setAllTags
             },
