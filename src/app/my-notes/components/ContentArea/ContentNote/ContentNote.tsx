@@ -7,7 +7,20 @@ import TitleOutlinedIcon from '@mui/icons-material/TitleOutlined';
 import StyleOutlinedIcon from '@mui/icons-material/StyleOutlined';
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 import DescriptionOutlinedIcon from '@mui/icons-material/DescriptionOutlined';
+import CodeOutlinedIcon from '@mui/icons-material/CodeOutlined';
+import ContentCopyOutlinedIcon from '@mui/icons-material/ContentCopyOutlined';
+import KeyboardArrowDownOutlinedIcon from '@mui/icons-material/KeyboardArrowDownOutlined';
+import KeyboardArrowUpOutlinedIcon from '@mui/icons-material/KeyboardArrowUpOutlined';
 import CloseIcon from '@mui/icons-material/Close';
+import { SiJavascript, SiPython } from "react-icons/si";
+import AceEditor from "react-ace";
+import { IconButton } from "@mui/material";
+import { v4 as uuidv4 } from "uuid";
+import SearchIcon from '@mui/icons-material/Search';
+
+// import "ace-builds/src-noconflict/mode-java";
+// import "ace-builds/src-noconflict/theme-github";
+// import "ace-builds/src-noconflict/ext-language_tools";
 
 
 function ContentNote() {
@@ -34,11 +47,11 @@ function ContentNote() {
     }, [singleNote])
 
     useEffect(() => {
-    console.log("Dark mode updated:", darkMode);
-}, [darkMode]);
+        console.log("Dark mode updated:", darkMode);
+    }, [darkMode]);
 
     return (
-        <div className={`border ${isMobile ? "w-4/5" : "w-1/2"} z-502  p-3 rounded-lg ${openContentNote ? "block" : "hidden"} h-[700px] ${isMobile ? "absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" : ""} ${darkMode[1].isSelected ? "bg-gray-700" : "bg-gray-100"}`}>
+        <div className={`border ${isMobile ? "w-4/5" : "w-1/2"} z-502  p-3 rounded-lg ${openContentNote ? "block" : "hidden"} h-[700px] ${isMobile ? "absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" : ""} ${darkMode[1].isSelected ? "bg-slate-700" : "bg-gray-100"}`}>
             {
                 singleNote && (
                     <ContentNoteHeader singleNote={singleNote} setSingleNote={setSingleNote} />
@@ -46,7 +59,8 @@ function ContentNote() {
 
             }
             <NoteTags singleNote={singleNote} setSingleNote={setSingleNote} />
-            <Description />
+            <Description singleNote={singleNote} setSingleNote={setSingleNote} />
+            <CodeBlock />
         </div>
     )
 }
@@ -197,23 +211,149 @@ function TagsMenu({ onClickedTag }: { onClickedTag: (tag: SingleTagType) => void
     )
 }
 
-function Description() {
-    const {darkModeObject: {darkMode}} = useGlobalContext();
+function Description({ singleNote, setSingleNote }: { singleNote: singleNoteType | undefined, setSingleNote: React.Dispatch<React.SetStateAction<singleNoteType | undefined>> }) {
+    const { darkModeObject: { darkMode }, allNotesObject: { allNotes, setAllNotes } } = useGlobalContext();
 
-    const [isHovered,setIsHovered] = useState(false);
-    // console.log(isHovered);
+    const [isHovered, setIsHovered] = useState(false);
+
+    function onUpdateDescription(event: React.ChangeEvent<HTMLTextAreaElement>) {
+        if (!singleNote) return;
+        const newSingleNote = { ...singleNote, description: event.target.value };
+        setSingleNote(newSingleNote);
+
+        const newAllNotes = allNotes.map((note) => {
+            if (note._id === singleNote._id) {
+                return newSingleNote;
+            }
+
+            return note;
+        })
+
+        setAllNotes(newAllNotes);
+    }
+
 
     return (
         <div className="flex gap-2 text-[12px] mt-8">
-            <DescriptionOutlinedIcon sx={{fontSize: 18}} 
-            className={`mt-[9px] ${isHovered ? "text-purple-600" : "text-slate-400"}`}/>
+            <DescriptionOutlinedIcon sx={{ fontSize: 18 }}
+                className={`mt-[9px] ${isHovered ? "text-purple-600" : "text-slate-400"}`} />
 
-            <textarea 
-            onMouseEnter={() => setIsHovered(true)}
-            onMouseLeave={() => setIsHovered(false)}
-            placeholder="New Description..."
-            className={`text-sm outline-none border ${isHovered ? "border-purple-600" : ""} rounded-lg p-2 w-full ${darkMode[1].isSelected ? "text-white" : "text-gray-500"}`}
+            <textarea
+                value={singleNote?.description}
+                onChange={onUpdateDescription}
+                onMouseEnter={() => setIsHovered(true)}
+                onMouseLeave={() => setIsHovered(false)}
+                placeholder="New Description..."
+                className={`text-sm outline-none border ${isHovered ? "border-purple-600" : ""} rounded-lg p-2 w-full ${darkMode[1].isSelected ? "text-white" : "text-gray-500"}`}
             />
         </div>
     )
 }
+
+function CodeBlock() {
+    const [code, setCode] = useState(`function onLoad(editor) {
+  console.log("i've loaded");
+}`)
+
+    const [isHovered, setIsHovered] = useState(false);
+    const [isOpened, setIsOpened] = useState(false);
+    const { darkModeObject: { darkMode } } = useGlobalContext();
+
+    return (
+        <div className="flex gap-2 text-[12px] text-slate-400 mt-8">
+            <CodeOutlinedIcon sx={{ fontSize: 18 }}
+                className={`mt-[9px] ${isHovered ? "text-purple-600" : "text-slate=400"}`} />
+            <div className={`${isHovered ? "border-purple-600" : ""} border rounded-lg p-3 pt-16 w-full relative`}
+                onMouseEnter={() => setIsHovered(true)}
+                onMouseLeave={() => setIsHovered(false)}
+            >
+                <div className="absolute top-4 right-4 z-50">
+                    <IconButton>
+                        <ContentCopyOutlinedIcon sx={{ fontSize: 18 }}
+                            className={`${darkMode[1].isSelected ? "text-white" : "text-slate-400"}`} />
+                    </IconButton>
+                </div>
+
+                <div
+                onClick={()=> setIsOpened(!isOpened)}
+                className={`flex gap-2 justify-between bg-slate-100 p-[6px] px-3 rounded-md items-center text-[12px] mt-3 absolute top-1 left-3 ${darkMode[1].isSelected ? "bg-slate-600 text-white" : "bg-sky-100 text-slate-400"}cursor-pointer`}>
+                    <div className="flex gap-1 items-center">
+                        <SiJavascript size={15} className="text-slate-400" />
+                        <span className="mt-[1px]">Javascript</span>
+                    </div>
+                    {isOpened ? (<KeyboardArrowUpOutlinedIcon sx={{ fontSize: 18 }} />) : (
+                        <KeyboardArrowDownOutlinedIcon sx={{ fontSize: 18 }} />
+                    )}
+                </div>
+                {isOpened && <LanguageMenu />}
+
+                <AceEditor
+                    placeholder="Placeholder Text"
+                    mode="javascript"
+                    theme="tomorrow"
+                    name="blah2"
+                    width="100%"
+                    height="300px"
+                    fontSize={14}
+                    lineHeight={19}
+                    showPrintMargin={false}
+                    showGutter={false}
+                    highlightActiveLine={false}
+                    value={`function onLoad(editor) {
+  console.log("i've loaded");
+}`}
+                    setOptions={{
+                        enableBasicAutocompletion: false,
+                        enableLiveAutocompletion: false,
+                        enableSnippets: false,
+                        showLineNumbers: false,
+                        tabSize: 2,
+                    }}
+
+                    className={`${darkMode[1].isSelected ? "bg-transparent text-white" : "bg-white"}`} />
+            </div>
+        </div>
+    )
+
+    function LanguageMenu() {
+        const [allLanguages, setAllLanguages] = useState([
+            {
+                id: uuidv4(),
+                name: "Javascript",
+                icon: <SiJavascript size={15} className="text-slate-400" />
+            },
+            {
+                id: uuidv4(),
+                name: "Python",
+                icon: <SiPython size={15} className="text-slate-400" />
+            }
+        ])
+
+        const textRef = useRef<HTMLInputElement>(null);
+
+        useEffect(() => {
+            textRef.current?.focus();
+        }, [isOpened])
+
+        return (
+            <div className={`${darkMode[1].isSelected ? "bg-slate-600" : ""}absolute flex-col gap-2 p-3 w-[200px] rounded-md left03 bg-slate-100 z-50 flex text-slate-400`}>
+                <div className={`${darkMode[1].isSelected ? "bg-slate-800" : "bg-slate-200"} p-1 rounded-md flex gap-1 mb-1`}>
+                    <SearchIcon />
+                    <input ref={textRef} placeholder="Search..." className="bg-transparent outline-none" />
+                </div>
+
+                <div>
+                    {
+                        allLanguages.map((language) => (
+                            <div key={language.id} className="flex mb-2 gap-2 hover:bg-slate-200 bg-transparent p-[6px] px-3 rounded-md items-center">
+                                {language.icon}
+                                <span className="mt-[1px]">{language.name}</span>
+                            </div>
+                        ))
+                    }
+                </div>
+            </div>
+        )
+    }
+}
+
