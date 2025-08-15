@@ -3,6 +3,8 @@
 import SearchIcon from "@mui/icons-material/Search";
 import { useGlobalContext } from "../../../../../../ContextApi";
 import {v4 as uuidv4} from "uuid";
+import { useRef } from "react";
+import { singleNoteType } from "@/app/Types";
 
 function SearchBar() {
 
@@ -20,7 +22,7 @@ function SearchBar() {
 }
 
 function AddSnippetButton() {
-    const {openContentNoteObject: {setOpenContentNote}, selectedNoteObject: {setSelectedNote}, allNotesObject: {allNotes, setAllNotes}, isNewNoteObject: {isNewNote, setIsNewNote}} = useGlobalContext();
+    const {openContentNoteObject: {setOpenContentNote}, selectedNoteObject: {setSelectedNote}, isNewNoteObject: {isNewNote, setIsNewNote}} = useGlobalContext();
 
     const openTheContentNote = (e: React.MouseEvent<HTMLDivElement>) => {
         const newSingleNote = {
@@ -35,6 +37,7 @@ function AddSnippetButton() {
         };
 
         // setAllNotes([...allNotes,newSingleNote]);
+
         setIsNewNote(true)
         setSelectedNote(newSingleNote);
         setOpenContentNote(true);

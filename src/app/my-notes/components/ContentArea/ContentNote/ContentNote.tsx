@@ -9,13 +9,14 @@ import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 import DescriptionOutlinedIcon from '@mui/icons-material/DescriptionOutlined';
 import CodeOutlinedIcon from '@mui/icons-material/CodeOutlined';
 import ContentCopyOutlinedIcon from '@mui/icons-material/ContentCopyOutlined';
+import DoneAllIcon from '@mui/icons-material/DoneAll';
 import KeyboardArrowDownOutlinedIcon from '@mui/icons-material/KeyboardArrowDownOutlined';
 import KeyboardArrowUpOutlinedIcon from '@mui/icons-material/KeyboardArrowUpOutlined';
 import CloseIcon from '@mui/icons-material/Close';
-import { SiJavascript, SiPython } from "react-icons/si";
 import AceEditor from "react-ace";
+import "ace-builds/src-noconflict/mode-javascript";
+import "ace-builds/src-noconflict/theme-tomorrow";
 import { IconButton } from "@mui/material";
-import { v4 as uuidv4 } from "uuid";
 import SearchIcon from '@mui/icons-material/Search';
 import { allLanguages } from "@/app/localData/Languages";
 
@@ -26,10 +27,10 @@ import { allLanguages } from "@/app/localData/Languages";
 
 function ContentNote() {
 
-    const { openContentNoteObject: { openContentNote }, isMobileObject: { isMobile }, selectedNoteObject: { selectedNote }, allNotesObject: { allNotes, setAllNotes }, isNewNoteObject: { isNewNote, setIsNewNote }, darkModeObject: { darkMode }, selectedLanguageObject:{selectedLanguage, setSelectedLanguage} } = useGlobalContext();
+    const { openContentNoteObject: { openContentNote }, isMobileObject: { isMobile }, selectedNoteObject: { selectedNote }, allNotesObject: { allNotes, setAllNotes }, isNewNoteObject: { isNewNote, setIsNewNote }, darkModeObject: { darkMode }, selectedLanguageObject: { selectedLanguage, setSelectedLanguage } } = useGlobalContext();
 
     const [singleNote, setSingleNote] = useState<singleNoteType | undefined>(undefined);
-
+    // Whenever we open a note (new or existing), load it
     useEffect(() => {
         if (openContentNote) {
             if (selectedNote) {
@@ -37,7 +38,7 @@ function ContentNote() {
             }
         }
     }, [openContentNote, selectedNote])
-
+    // If it's a new note, add it immediately
     useEffect(() => {
         if (isNewNote) {
             if (singleNote && singleNote.title !== "") {
@@ -50,9 +51,9 @@ function ContentNote() {
     useEffect(() => {
         console.log("Dark mode updated:", darkMode);
     }, [darkMode]);
-
-    useEffect(()=>{
-        if(selectedLanguage && singleNote){
+    // Update language in current note
+    useEffect(() => {
+        if (selectedLanguage && singleNote) {
             const newLanguage = selectedLanguage.name;
             const updateSingleNote: singleNoteType = {
                 ...singleNote,
@@ -60,16 +61,16 @@ function ContentNote() {
             };
 
             const updateAllNotes = allNotes.map((note) => {
-                if(note._id === singleNote._id){
+                if (note._id === singleNote._id) {
                     return updateSingleNote;
                 }
                 return note;
             })
-            
+
             setAllNotes(updateAllNotes);
             setSingleNote(updateSingleNote);
-        } 
-    },[selectedLanguage])
+        }
+    }, [selectedLanguage])
 
     return (
         <div className={`border ${isMobile ? "w-4/5" : "w-1/2"} z-502  p-3 rounded-lg ${openContentNote ? "block" : "hidden"} h-[700px] ${isMobile ? "absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" : ""} ${darkMode[1].isSelected ? "bg-slate-700" : "bg-gray-100"}`}>
@@ -81,7 +82,7 @@ function ContentNote() {
             }
             <NoteTags singleNote={singleNote} setSingleNote={setSingleNote} />
             <Description singleNote={singleNote} setSingleNote={setSingleNote} />
-            <CodeBlock singleNote={singleNote}/>
+            <CodeBlock singleNote={singleNote} setSingleNote={setSingleNote} />
         </div>
     )
 }
@@ -90,7 +91,9 @@ export default ContentNote;
 
 function ContentNoteHeader({ singleNote, setSingleNote }: { singleNote: singleNoteType, setSingleNote: React.Dispatch<React.SetStateAction<singleNoteType | undefined>> }) {
 
-    const { allNotesObject: { allNotes, setAllNotes }, isNewNoteObject: { setIsNewNote }, openContentNoteObject: { setOpenContentNote }, darkModeObject: { darkMode } } = useGlobalContext();
+    const { allNotesObject: { allNotes, setAllNotes }, isNewNoteObject: { setIsNewNote }, openContentNoteObject: { openContentNote, setOpenContentNote }, darkModeObject: { darkMode } } = useGlobalContext();
+    const [focus, setFocus] = useState(false);
+    const textRef = useRef<HTMLTextAreaElement>(null);
 
     function onUpdateTitle(e: React.ChangeEvent<HTMLTextAreaElement>) {
         const newSingleNote = { ...singleNote, title: e.target.value };
@@ -111,13 +114,26 @@ function ContentNoteHeader({ singleNote, setSingleNote }: { singleNote: singleNo
             event.preventDefault();
         }
     }
-    const [focus, setFocus] = useState(false);
+
+    useEffect(() => {
+        if(openContentNote){
+            textRef.current?.focus();
+            setFocus(true);
+        }
+    },[openContentNote])
+    useEffect(() => {
+        if(singleNote.title !== ""){
+            setFocus(true);
+        }
+    },[singleNote.title])
+    
     return (
         <div className="flex justify-between items-center gap-8 mb-4">
             <div className="flex gap-2 w-full items-center">
                 <TitleOutlinedIcon sx={{ fontSize: 19 }} className={`${focus ? "text-purple-600" : "text-slate-400"}  mt-[4px]${darkMode[1].isSelected ? "text-white" : "text-slate-400"}`} />
 
                 <textarea
+                    ref={textRef}
                     placeholder="New Title..."
                     value={singleNote.title}
                     onChange={onUpdateTitle}
@@ -288,14 +304,55 @@ function Description({ singleNote, setSingleNote }: { singleNote: singleNoteType
     )
 }
 
-function CodeBlock({ singleNote }: { singleNote: singleNoteType | undefined }) {
+function CodeBlock({ singleNote, setSingleNote }: { singleNote: singleNoteType | undefined, setSingleNote: React.Dispatch<React.SetStateAction<singleNoteType | undefined>> }) {
     const [code, setCode] = useState(`function onLoad(editor) {
   console.log("i've loaded");
 }`)
 
     const [isHovered, setIsHovered] = useState(false);
     const [isOpened, setIsOpened] = useState(false);
-    const { darkModeObject: { darkMode }, selectedLanguageObject: { selectedLanguage, setSelectedLanguage } } = useGlobalContext();
+    const [isCopied, setIsCopied] = useState(false);
+    const { darkModeObject: { darkMode }, selectedLanguageObject: { selectedLanguage, setSelectedLanguage }, selectedNoteObject: { selectedNote }, allNotesObject: { allNotes, setAllNotes } } = useGlobalContext();
+
+    useEffect(() => {
+        if (selectedNote) {
+            if (selectedNote.language === "") {
+                setSelectedLanguage(allLanguages[0]);
+                return;
+            }
+            const findLanguage = allLanguages.find((language) => language.name.toLowerCase() === selectedNote.language.toLocaleLowerCase());
+
+            if (findLanguage) {
+                setSelectedLanguage(findLanguage);
+            }
+        }
+    }, [selectedNote])
+
+    const handleChange = (code: string) => {
+        if (!singleNote) {
+            return;
+        }
+        const newSingleNote = { ...singleNote, code: code };
+        const updateAllNotes = allNotes.map((note) => {
+            if (note._id === singleNote._id) {
+                return newSingleNote;
+            }
+            return note;
+        });
+        setAllNotes(updateAllNotes);
+        setSingleNote(newSingleNote)
+    }
+
+    function clickedCopyBtn() {
+        if (!singleNote) {
+            return;
+        }
+        navigator.clipboard.writeText(singleNote.code)
+        setIsCopied(true);
+        setTimeout(() => {
+            setIsCopied(false);
+        }, 1200);
+    }
 
     return (
         <div className="flex gap-2 text-[12px] text-slate-400 mt-8">
@@ -306,9 +363,15 @@ function CodeBlock({ singleNote }: { singleNote: singleNoteType | undefined }) {
                 onMouseLeave={() => setIsHovered(false)}
             >
                 <div className="absolute top-4 right-4 z-50">
-                    <IconButton>
-                        <ContentCopyOutlinedIcon sx={{ fontSize: 18 }}
-                            className={`${darkMode[1].isSelected ? "text-white" : "text-slate-400"}`} />
+                    <IconButton disabled={isCopied}>
+                        {
+                            isCopied ? <DoneAllIcon sx={{ fontSize: 18 }}
+                                className={`${darkMode[1].isSelected ? "text-white" : "text-slate-400"}`} /> : <ContentCopyOutlinedIcon
+                                onClick={() => clickedCopyBtn()}
+                                sx={{ fontSize: 18 }}
+                                className={`${darkMode[1].isSelected ? "text-white" : "text-slate-400"}`} />
+                        }
+
                     </IconButton>
                 </div>
                 {/* Language dropdown */}
@@ -317,7 +380,7 @@ function CodeBlock({ singleNote }: { singleNote: singleNoteType | undefined }) {
                     className={`flex gap-2 justify-between bg-slate-100 p-[6px] px-3 rounded-md items-center text-[12px] mt-3 absolute top-1 left-3 ${darkMode[1].isSelected ? "bg-slate-600 text-white" : "bg-sky-100 text-slate-400"}cursor-pointer`}>
                     <div className="flex gap-1 items-center cursor-pointer">
                         {selectedLanguage?.icon}
-                        <span className="mt-[1px]">{singleNote?.language}</span>
+                        <span className="mt-[1px]">{selectedLanguage?.name}</span>
                     </div>
                     {isOpened ? (<KeyboardArrowUpOutlinedIcon sx={{ fontSize: 18 }} />) : (
                         <KeyboardArrowDownOutlinedIcon sx={{ fontSize: 18 }} />
@@ -331,15 +394,13 @@ function CodeBlock({ singleNote }: { singleNote: singleNoteType | undefined }) {
                     theme="tomorrow"
                     name="blah2"
                     width="100%"
-                    height="300px"
+                    height="390px"
                     fontSize={14}
                     lineHeight={19}
                     showPrintMargin={false}
                     showGutter={false}
                     highlightActiveLine={false}
-                    value={`function onLoad(editor) {
-  console.log("i've loaded");
-}`}
+                    value={singleNote?.code}
                     setOptions={{
                         enableBasicAutocompletion: false,
                         enableLiveAutocompletion: false,
@@ -347,6 +408,8 @@ function CodeBlock({ singleNote }: { singleNote: singleNoteType | undefined }) {
                         showLineNumbers: false,
                         tabSize: 2,
                     }}
+
+                    onChange={handleChange}
 
                     className={`${darkMode[1].isSelected ? "bg-transparent text-white" : "bg-white"}`} />
             </div>
@@ -409,7 +472,7 @@ function CodeBlock({ singleNote }: { singleNote: singleNoteType | undefined }) {
                             <div
                                 onClick={() => clickedLanguage(language)}
                                 key={language.id}
-                                className="flex mb-2 gap-2 hover:bg-slate-200 bg-transparent p-[6px] px-3 rounded-md items-center cursor-pointer">
+                                className={`flex mb-2 gap-2 hover:bg-slate-200 bg-transparent p-[6px] px-3 rounded-md items-center cursor-pointer ${selectedLanguage?.name.toLocaleLowerCase() === language.name.toLowerCase() ? "bg-slate-200" : ""}`}>
 
                                 {language.icon}
                                 <span className="mt-[1px]">{language.name}</span>

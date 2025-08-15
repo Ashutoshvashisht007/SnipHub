@@ -3,11 +3,12 @@
 import React from 'react'
 import { useGlobalContext } from '../../../../../../ContextApi'
 import FavoriteBorderOutlinedIcon from '@mui/icons-material/FavoriteBorderOutlined';
-import SyntaxHighlighter from 'react-syntax-highlighter';
-import { materialLight, oneDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
-import { SiJavascript } from 'react-icons/si';
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
+import { oneDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
+import { materialLight } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import DeleteRoundedIcon from '@mui/icons-material/DeleteRounded';
 import { singleNoteType, SingleTagType } from '@/app/Types';
+import getLanguageToIcon from '@/app/utils/LanguageTextToIcon';
 
 const AllNotesSection = () => {
 
@@ -104,7 +105,7 @@ const CodeBlock: React.FC<CodeBlockProps> = ({ language, code }) => {
 
     return (
         <div className='rounded-md overflow-hidden text-sm'>
-            <SyntaxHighlighter language={language} style={darkMode[1].isSelected ? oneDark : materialLight}>
+            <SyntaxHighlighter language={language?.toLowerCase()} style={darkMode[1].isSelected ? oneDark : materialLight}>
                 {code}
             </SyntaxHighlighter>
         </div>
@@ -118,8 +119,8 @@ function NoteFooter({ footer }: { footer: string }) {
     return (
         <div className='flex justify-between text-[13px] text-slate-400 mx-4 mt-3'>
             <div className='flex gap-1 items-center'>
-                <SiJavascript size={15} className='' />
-                {footer}
+                {getLanguageToIcon(footer)}
+                <span>{footer}</span>
             </div>
             <DeleteRoundedIcon sx={{ fontSize: 17 }} className="cursor-pointer" />
         </div>

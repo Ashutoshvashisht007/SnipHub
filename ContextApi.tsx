@@ -187,7 +187,7 @@ export default function GlobalContextProvider({
                 code: `console.log('Hello, world!');
                 functions a(){
                 console.log("b");}`,
-                language: "javascript",
+                language: "JavaScript",
                 creationDate: new Date().toISOString()
             },
             {
@@ -202,7 +202,7 @@ export default function GlobalContextProvider({
                 code: `function greet() {
                     console.log('Hello!');
                 }`,
-                language: "javascript",
+                language: "JavaScript",
                 creationDate: new Date().toISOString()
             }
             ];
