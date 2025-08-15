@@ -7,8 +7,9 @@ import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined
 import LogoutIcon from "@mui/icons-material/Logout";
 import LightModeIcon from "@mui/icons-material/LightMode";
 import DarkModeIcon from "@mui/icons-material/DarkMode";
-import { DarkModeType, SidebarMenu, singleNoteType, SingleTagType } from "@/app/Types";
+import { DarkModeType, SidebarMenu, SingleCodeLanguageType, singleNoteType, SingleTagType } from "@/app/Types";
 import { v4 as uuidv4 } from "uuid";
+import { SiJavascript } from "react-icons/si";
 
 interface GlobalContextType {
     sideBarMenuObject: {
@@ -50,6 +51,10 @@ interface GlobalContextType {
     selctedTagsObject: {
         selectedTags: SingleTagType[],
         setSelectedTags: React.Dispatch<React.SetStateAction<SingleTagType[]>>;
+    },
+    selectedLanguageObject: {
+        selectedLanguage: SingleCodeLanguageType | null,
+        setSelectedLanguage: React.Dispatch<React.SetStateAction<SingleCodeLanguageType | null>>
     }
 }
 
@@ -93,6 +98,10 @@ const ContextProvider = createContext<GlobalContextType>({
     selctedTagsObject: {
         selectedTags: [],
         setSelectedTags: () => { }
+    },
+    selectedLanguageObject:{
+        selectedLanguage: null,
+        setSelectedLanguage: ()=> {}
     }
 })
 
@@ -147,6 +156,7 @@ export default function GlobalContextProvider({
     const [isNewNote, setIsNewNote] = useState(false);
     const [alltags, setAllTags] = useState<SingleTagType[]>([]);
     const [selectedTags, setSelectedTags] = useState<SingleTagType[]>([])
+    const [selectedLanguage,setSelectedLanguage] = useState<SingleCodeLanguageType | null>(null);
 
     const handleResize = () => {
         setIsMobile(window.innerWidth <= 640);
@@ -277,6 +287,10 @@ export default function GlobalContextProvider({
             selctedTagsObject: {
                 selectedTags,
                 setSelectedTags
+            },
+            selectedLanguageObject:{
+                selectedLanguage,
+                setSelectedLanguage
             }
         }}>
             {children}

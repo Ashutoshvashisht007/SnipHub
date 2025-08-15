@@ -62,7 +62,7 @@ function NoteHeader({ title, isFavirote, _id }: { title: string, isFavirote: boo
     )
 }
 
-function NoteTags({ tags }: { tags: SingleTagType[]}) {
+function NoteTags({ tags }: { tags: SingleTagType[] }) {
     return (
         <div className='text-slate-500 text-[11px] mx-4 flex-wrap flex gap-1 mt-4'>
             {tags.map((tag) => (
@@ -112,10 +112,13 @@ const CodeBlock: React.FC<CodeBlockProps> = ({ language, code }) => {
 }
 
 function NoteFooter({ footer }: { footer: string }) {
+
+    // const { selectedLanguageObject: { selectedLanguage } } = useGlobalContext();
+
     return (
         <div className='flex justify-between text-[13px] text-slate-400 mx-4 mt-3'>
             <div className='flex gap-1 items-center'>
-                <SiJavascript size={15} className='mb-[2px]' />
+                <SiJavascript size={15} className='' />
                 {footer}
             </div>
             <DeleteRoundedIcon sx={{ fontSize: 17 }} className="cursor-pointer" />

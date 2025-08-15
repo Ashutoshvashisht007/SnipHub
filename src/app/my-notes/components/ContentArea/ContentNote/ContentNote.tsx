@@ -2,7 +2,7 @@
 
 import React, { useEffect, useRef, useState } from "react";
 import { useGlobalContext } from "../../../../../../ContextApi"
-import { singleNoteType, SingleTagType } from "@/app/Types";
+import { SingleCodeLanguageType, singleNoteType, SingleTagType } from "@/app/Types";
 import TitleOutlinedIcon from '@mui/icons-material/TitleOutlined';
 import StyleOutlinedIcon from '@mui/icons-material/StyleOutlined';
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
@@ -17,6 +17,7 @@ import AceEditor from "react-ace";
 import { IconButton } from "@mui/material";
 import { v4 as uuidv4 } from "uuid";
 import SearchIcon from '@mui/icons-material/Search';
+import { allLanguages } from "@/app/localData/Languages";
 
 // import "ace-builds/src-noconflict/mode-java";
 // import "ace-builds/src-noconflict/theme-github";
@@ -25,7 +26,7 @@ import SearchIcon from '@mui/icons-material/Search';
 
 function ContentNote() {
 
-    const { openContentNoteObject: { openContentNote }, isMobileObject: { isMobile }, selectedNoteObject: { selectedNote }, allNotesObject: { allNotes, setAllNotes }, isNewNoteObject: { isNewNote, setIsNewNote }, darkModeObject: { darkMode } } = useGlobalContext();
+    const { openContentNoteObject: { openContentNote }, isMobileObject: { isMobile }, selectedNoteObject: { selectedNote }, allNotesObject: { allNotes, setAllNotes }, isNewNoteObject: { isNewNote, setIsNewNote }, darkModeObject: { darkMode }, selectedLanguageObject:{selectedLanguage, setSelectedLanguage} } = useGlobalContext();
 
     const [singleNote, setSingleNote] = useState<singleNoteType | undefined>(undefined);
 
@@ -50,6 +51,26 @@ function ContentNote() {
         console.log("Dark mode updated:", darkMode);
     }, [darkMode]);
 
+    useEffect(()=>{
+        if(selectedLanguage && singleNote){
+            const newLanguage = selectedLanguage.name;
+            const updateSingleNote: singleNoteType = {
+                ...singleNote,
+                language: newLanguage,
+            };
+
+            const updateAllNotes = allNotes.map((note) => {
+                if(note._id === singleNote._id){
+                    return updateSingleNote;
+                }
+                return note;
+            })
+            
+            setAllNotes(updateAllNotes);
+            setSingleNote(updateSingleNote);
+        } 
+    },[selectedLanguage])
+
     return (
         <div className={`border ${isMobile ? "w-4/5" : "w-1/2"} z-502  p-3 rounded-lg ${openContentNote ? "block" : "hidden"} h-[700px] ${isMobile ? "absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" : ""} ${darkMode[1].isSelected ? "bg-slate-700" : "bg-gray-100"}`}>
             {
@@ -60,7 +81,7 @@ function ContentNote() {
             }
             <NoteTags singleNote={singleNote} setSingleNote={setSingleNote} />
             <Description singleNote={singleNote} setSingleNote={setSingleNote} />
-            <CodeBlock />
+            <CodeBlock singleNote={singleNote}/>
         </div>
     )
 }
@@ -156,8 +177,25 @@ function NoteTags({ singleNote, setSingleNote }: { singleNote: singleNoteType | 
         setSingleNote(newSingleNote);
     }, [selectedTags])
 
+    const menuRef = useRef<HTMLDivElement>(null);
+
+    const handleClickOutside = (e: MouseEvent) => {
+        if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+            setIsOpened(false);
+        }
+    };
+
+    useEffect(() => {
+        document.addEventListener("mousedown", handleClickOutside);
+
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+        }
+    }, []);
+
     return (
-        <div className="flex text-[13px] items-center gap-2">
+        <div className="flex text-[13px] items-center gap-2"
+            ref={menuRef}>
             <StyleOutlinedIcon sx={{ fontSize: 19 }} className={`${hovered ? "text-purple-600" : "text-slate-400"}`} />
             <div
                 onMouseEnter={() => setHovered(true)}
@@ -250,14 +288,14 @@ function Description({ singleNote, setSingleNote }: { singleNote: singleNoteType
     )
 }
 
-function CodeBlock() {
+function CodeBlock({ singleNote }: { singleNote: singleNoteType | undefined }) {
     const [code, setCode] = useState(`function onLoad(editor) {
   console.log("i've loaded");
 }`)
 
     const [isHovered, setIsHovered] = useState(false);
     const [isOpened, setIsOpened] = useState(false);
-    const { darkModeObject: { darkMode } } = useGlobalContext();
+    const { darkModeObject: { darkMode }, selectedLanguageObject: { selectedLanguage, setSelectedLanguage } } = useGlobalContext();
 
     return (
         <div className="flex gap-2 text-[12px] text-slate-400 mt-8">
@@ -273,13 +311,13 @@ function CodeBlock() {
                             className={`${darkMode[1].isSelected ? "text-white" : "text-slate-400"}`} />
                     </IconButton>
                 </div>
-
+                {/* Language dropdown */}
                 <div
-                onClick={()=> setIsOpened(!isOpened)}
-                className={`flex gap-2 justify-between bg-slate-100 p-[6px] px-3 rounded-md items-center text-[12px] mt-3 absolute top-1 left-3 ${darkMode[1].isSelected ? "bg-slate-600 text-white" : "bg-sky-100 text-slate-400"}cursor-pointer`}>
-                    <div className="flex gap-1 items-center">
-                        <SiJavascript size={15} className="text-slate-400" />
-                        <span className="mt-[1px]">Javascript</span>
+                    onClick={() => setIsOpened(!isOpened)}
+                    className={`flex gap-2 justify-between bg-slate-100 p-[6px] px-3 rounded-md items-center text-[12px] mt-3 absolute top-1 left-3 ${darkMode[1].isSelected ? "bg-slate-600 text-white" : "bg-sky-100 text-slate-400"}cursor-pointer`}>
+                    <div className="flex gap-1 items-center cursor-pointer">
+                        {selectedLanguage?.icon}
+                        <span className="mt-[1px]">{singleNote?.language}</span>
                     </div>
                     {isOpened ? (<KeyboardArrowUpOutlinedIcon sx={{ fontSize: 18 }} />) : (
                         <KeyboardArrowDownOutlinedIcon sx={{ fontSize: 18 }} />
@@ -316,38 +354,67 @@ function CodeBlock() {
     )
 
     function LanguageMenu() {
-        const [allLanguages, setAllLanguages] = useState([
-            {
-                id: uuidv4(),
-                name: "Javascript",
-                icon: <SiJavascript size={15} className="text-slate-400" />
-            },
-            {
-                id: uuidv4(),
-                name: "Python",
-                icon: <SiPython size={15} className="text-slate-400" />
-            }
-        ])
-
         const textRef = useRef<HTMLInputElement>(null);
+        const [searchQuery, setSearchQuery] = useState("");
 
         useEffect(() => {
             textRef.current?.focus();
-        }, [isOpened])
+        }, [isOpened]);
+
+        const [filteredLanguages, setFilteredLanguages] = useState(allLanguages);
+        const menuRef = useRef<HTMLDivElement>(null);
+        const onChangeSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+            setSearchQuery(e.target.value.toLowerCase());
+        };
+
+        useEffect(() => {
+            const filtered = allLanguages.filter((language) => language.name.toLowerCase().includes(searchQuery));
+
+            setFilteredLanguages(filtered);
+        }, [searchQuery]);
+
+        const handleClickOutside = (e: MouseEvent) => {
+            if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+                setIsOpened(false);
+            }
+        };
+
+        useEffect(() => {
+            document.addEventListener("mousedown", handleClickOutside);
+
+            return () => {
+                document.removeEventListener("mousedown", handleClickOutside);
+            }
+        }, []);
+
+        function clickedLanguage(language: SingleCodeLanguageType) {
+            setSelectedLanguage(language);
+            setIsOpened(false);
+        }
 
         return (
-            <div className={`${darkMode[1].isSelected ? "bg-slate-600" : ""}absolute flex-col gap-2 p-3 w-[200px] rounded-md left03 bg-slate-100 z-50 flex text-slate-400`}>
+            <div
+                ref={menuRef}
+                className={`${darkMode[1].isSelected ? "bg-slate-600" : ""}absolute flex-col gap-2 p-3 h-[220px] w-[250px] rounded-md left03 bg-slate-100 z-50 flex text-slate-400`}>
                 <div className={`${darkMode[1].isSelected ? "bg-slate-800" : "bg-slate-200"} p-1 rounded-md flex gap-1 mb-1`}>
                     <SearchIcon />
-                    <input ref={textRef} placeholder="Search..." className="bg-transparent outline-none" />
+                    <input ref={textRef} placeholder="Search..." className="bg-transparent outline-none"
+                        onChange={onChangeSearch}
+                        value={searchQuery} />
                 </div>
 
-                <div>
+                <div className="h-40 bg-slate-100 overflow-x-auto">
                     {
-                        allLanguages.map((language) => (
-                            <div key={language.id} className="flex mb-2 gap-2 hover:bg-slate-200 bg-transparent p-[6px] px-3 rounded-md items-center">
+                        filteredLanguages.map((language) => (
+                            <div
+                                onClick={() => clickedLanguage(language)}
+                                key={language.id}
+                                className="flex mb-2 gap-2 hover:bg-slate-200 bg-transparent p-[6px] px-3 rounded-md items-center cursor-pointer">
+
                                 {language.icon}
                                 <span className="mt-[1px]">{language.name}</span>
+
+
                             </div>
                         ))
                     }

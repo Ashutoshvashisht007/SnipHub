@@ -26,3 +26,9 @@ export interface SingleTagType{
     _id: string;
     name: string;
 }
+
+export interface SingleCodeLanguageType {
+    id: string;
+    name: string;
+    icon: React.ReactNode;
+}
