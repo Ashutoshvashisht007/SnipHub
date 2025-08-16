@@ -3,9 +3,6 @@
 import SearchIcon from "@mui/icons-material/Search";
 import { useGlobalContext } from "../../../../../../ContextApi";
 import {v4 as uuidv4} from "uuid";
-import { useRef } from "react";
-import { singleNoteType } from "@/app/Types";
-import formatDate from "@/app/utils/Time";
 
 function SearchBar() {
 

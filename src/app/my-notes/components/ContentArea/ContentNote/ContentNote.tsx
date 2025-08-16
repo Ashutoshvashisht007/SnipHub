@@ -20,11 +20,6 @@ import { IconButton } from "@mui/material";
 import SearchIcon from '@mui/icons-material/Search';
 import { allLanguages } from "@/app/localData/Languages";
 
-// import "ace-builds/src-noconflict/mode-java";
-// import "ace-builds/src-noconflict/theme-github";
-// import "ace-builds/src-noconflict/ext-language_tools";
-
-
 function ContentNote() {
 
     const { openContentNoteObject: { openContentNote }, isMobileObject: { isMobile }, selectedNoteObject: { selectedNote }, allNotesObject: { allNotes, setAllNotes }, isNewNoteObject: { isNewNote, setIsNewNote }, darkModeObject: { darkMode }, selectedLanguageObject: { selectedLanguage, setSelectedLanguage } } = useGlobalContext();
@@ -150,7 +145,7 @@ function ContentNoteHeader({ singleNote, setSingleNote }: { singleNote: singleNo
                     onFocus={() => setFocus(true)}
                     onMouseEnter={() => setFocus(true)}
                     onMouseLeave={() => setFocus(false)}
-                    className={` ${darkMode[1].isSelected ? "text-white" : "text-black"} font-bold text-xl outline-none resize-none overflow-hidden w-full bg-transparent min-h-0 leading-none py-0`}
+                    className={` ${darkMode[1].isSelected ? "text-white" : "text-black"} font-bold text-xl outline-none resize-none overflow-hidden w-full bg-transparent min-h-0 leading-none p-[20px]`}
                     rows={1}
                 />
             </div>

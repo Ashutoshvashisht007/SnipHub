@@ -9,8 +9,6 @@ import LightModeIcon from "@mui/icons-material/LightMode";
 import DarkModeIcon from "@mui/icons-material/DarkMode";
 import { DarkModeType, SidebarMenu, SingleCodeLanguageType, singleNoteType, SingleTagType } from "@/app/Types";
 import { v4 as uuidv4 } from "uuid";
-import { SiJavascript } from "react-icons/si";
-import formatDate from "@/app/utils/Time";
 
 interface GlobalContextType {
     sideBarMenuObject: {
@@ -190,12 +188,12 @@ export default function GlobalContextProvider({
                 console.log("b");}`,
                 language: "JavaScript",
                 creationDate: new Date().toISOString(),
-                isTrash: false
+                isTrash: false,
             },
             {
                 _id: uuidv4(),
                 title: "Another Note",
-                isFavorite: true,
+                isFavorite: false,
                 tags: [{
                     _id: uuidv4(),
                     name: "tag3"

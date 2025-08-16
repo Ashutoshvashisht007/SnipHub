@@ -1,29 +1,59 @@
 "use client"
 
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useGlobalContext } from '../../../../../../ContextApi'
 import FavoriteBorderOutlinedIcon from '@mui/icons-material/FavoriteBorderOutlined';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { oneDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { materialLight } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import DeleteRoundedIcon from '@mui/icons-material/DeleteRounded';
+import RestoreFromTrashOutlinedIcon from '@mui/icons-material/RestoreFromTrashOutlined';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import { singleNoteType, SingleTagType } from '@/app/Types';
 import getLanguageToIcon from '@/app/utils/LanguageTextToIcon';
-import formatDate from '@/app/utils/Time';
 import { Checkbox } from '@mui/material';
 import ReplayIcon from '@mui/icons-material/Replay';
 import toast from 'react-hot-toast';
+import { truncateString, formatDate } from '@/app/utils/Utils';
 
 const AllNotesSection = () => {
 
-    const { allNotesObject: { allNotes }, isMobileObject: { isMobile }, openContentNoteObject: { openContentNote } } = useGlobalContext();
+    const { allNotesObject: { allNotes }, sideBarMenuObject: { sideBarMenu }, openContentNoteObject: {openContentNote, setOpenContentNote} } = useGlobalContext();
 
     const filterIsTrahsedNotes = allNotes.filter((note) => note.isTrash === false);
 
+    const [filteredNotes, setFilteredNotes] = useState(allNotes.filter((note) => note.isTrash === false));
+
+    useEffect(() => {
+        if (sideBarMenu[0].isSelected) {
+            setFilteredNotes(allNotes.filter((note) => !note.isTrash))
+        }
+
+        if (sideBarMenu[1].isSelected) {
+            setFilteredNotes(allNotes.filter((note) => note.isFavorite && !note.isTrash));
+        }
+    }, [allNotes]);
+
+    useEffect(() => {
+        if(openContentNote){
+            setOpenContentNote(false);
+        }
+        if (sideBarMenu[0].isSelected) {
+            setFilteredNotes(filterIsTrahsedNotes)
+        }
+        if (sideBarMenu[1].isSelected) {
+            const filteredFavoriteNotes = allNotes.filter((note) => !note.isTrash && note.isFavorite);
+            setFilteredNotes(filteredFavoriteNotes);
+        }
+        if (sideBarMenu[2].isSelected) {
+            const filteredTrashedNotes = allNotes.filter((note) => note.isTrash);
+            setFilteredNotes(filteredTrashedNotes);
+        }
+    }, [sideBarMenu])
+
     return (
         <div className={`mt-5 flex flex-wrap gap-4`}>
-            {filterIsTrahsedNotes.map(note => (
+            {filteredNotes.map(note => (
                 <SingleNote key={note._id} note={note} />
             ))}
         </div>
@@ -37,17 +67,17 @@ function SingleNote({ note }: { note: singleNoteType }) {
 
     return (
         <div className={`${darkMode[1].isSelected ? "bg-slate-800 text-white" : "bg-white"} ${openContentNote ? "w-full" : "w-[320px]"} max-sm:w-full rounded-md py-4 overflow-hidden`}>
-            <NoteHeader _id={note._id} title={note.title} isFavirote={note.isFavorite} />
+            <NoteHeader _id={note._id} title={note.title} isFavirote={note.isFavorite} isTrashed={note.isTrash} />
             <NoteDate date={note.creationDate} />
             <NoteTags tags={note.tags} />
             <NoteDescription description={note.description} />
             <CodeBlock language={note.language} code={note.code} />
-            <NoteFooter footer={note.language} _id={note._id} />
+            <NoteFooter footer={note.language} note={note} />
         </div>
     )
 }
 
-function NoteHeader({ title, isFavirote, _id }: { title: string, isFavirote: boolean, _id: string }) {
+function NoteHeader({ title, isFavirote, _id, isTrashed }: { title: string, isFavirote: boolean, _id: string, isTrashed: boolean }) {
 
     const { openContentNoteObject: { setOpenContentNote }, allNotesObject: { allNotes, setAllNotes }, selectedNoteObject: { selectedNote, setSelectedNote } } = useGlobalContext();
 
@@ -55,8 +85,9 @@ function NoteHeader({ title, isFavirote, _id }: { title: string, isFavirote: boo
 
     const handleClick = (e: React.MouseEvent<HTMLSpanElement, MouseEvent>) => {
         e.preventDefault();
-        setOpenContentNote(true);
-
+        if(!isTrashed){
+            setOpenContentNote(true);
+        }
         const temp = allNotes.find(note => note._id === _id) || null;
         setSelectedNote(temp);
     }
@@ -77,16 +108,21 @@ function NoteHeader({ title, isFavirote, _id }: { title: string, isFavirote: boo
     return (
         <div className='flex justify-between mx-4'>
             <span onClick={handleClick} className='font-bold text-lg w-[87%] cursor-pointer'>
-                {title}
+                {truncateString(title, 60)}
             </span>
-            <Checkbox
-                icon={<FavoriteBorderOutlinedIcon className="text-slate-400 cursor-pointer" />}
-                checkedIcon={
-                    <FavoriteIcon className='text-purple-600 cursor-pointer' />
-                }
-                checked={isFavorite}
-                onChange={handleClickedCheckbox}
-            />
+            {
+                !isTrashed && (
+                    <Checkbox
+                        icon={<FavoriteBorderOutlinedIcon className="text-slate-400 cursor-pointer" />}
+                        checkedIcon={
+                            <FavoriteIcon className='text-purple-600 cursor-pointer' />
+                        }
+                        checked={isFavorite}
+                        onChange={handleClickedCheckbox}
+                    />
+                )
+            }
+
 
         </div>
     )
@@ -118,7 +154,7 @@ function NoteDescription({ description }: { description: string }) {
 
     return (
         <div className={`${darkMode[1].isSelected ? "text-slate-300" : ""} text-slate-600 text-[13px] mt-4 mx-4`}>
-            {description}
+            {truncateString(description, 200)}
         </div>
     )
 }
@@ -135,25 +171,17 @@ const CodeBlock: React.FC<CodeBlockProps> = ({ language, code }) => {
     return (
         <div className='rounded-md overflow-hidden text-sm'>
             <SyntaxHighlighter language={language?.toLowerCase()} style={darkMode[1].isSelected ? oneDark : materialLight}>
-                {code}
+                {truncateString(code, 250)}
             </SyntaxHighlighter>
         </div>
     )
 }
 
-function NoteFooter({ footer, _id }: { footer: string, _id: string }) {
+function NoteFooter({ footer, note }: { footer: string, note: singleNoteType }) {
 
     const { allNotesObject: { allNotes, setAllNotes } } = useGlobalContext();
-    // const [isDeleted,setIsDeleted] = useState(false);
 
     const handleTrash = () => {
-        const copyAllNotes = [...allNotes];
-        const findIdx = copyAllNotes.findIndex((note) => note._id === _id);
-        const clickedNote = { ...copyAllNotes[findIdx], isTrash: true };
-
-        copyAllNotes[findIdx] = clickedNote;
-        setAllNotes(copyAllNotes);
-
         toast((t) => (
             <div className='flex gap-2 items-center'>
                 <span>Note has been moved to the trash</span>
@@ -163,16 +191,28 @@ function NoteFooter({ footer, _id }: { footer: string, _id: string }) {
                         resetNoteFunction();
                     }}>
                     <ReplayIcon sx={{ fontSize: 17 }} />
-                    <span>Undo</span>
+                    <span className='cursor-pointer'>Undo</span>
                 </button>
             </div>
         ));
+
+        const copyAllNotes = [...allNotes];
+        const findIdx = copyAllNotes.findIndex((n) => n._id === note._id);
+
+        if (findIdx === -1) {
+            console.error("Note not found!");
+            return;
+        }
+
+        const clickedNote = { ...copyAllNotes[findIdx], isTrash: true };
+        copyAllNotes[findIdx] = clickedNote;
+        setAllNotes(copyAllNotes);
     }
 
     function resetNoteFunction() {
         setAllNotes((prevNotes) =>
-            prevNotes.map((note) =>
-                note._id === _id ? { ...note, isTrash: false } : note
+            prevNotes.map((n) =>
+                n._id === note._id ? { ...n, isTrash: false } : note
             )
         );
     }
@@ -182,8 +222,18 @@ function NoteFooter({ footer, _id }: { footer: string, _id: string }) {
                 {getLanguageToIcon(footer)}
                 <span>{footer}</span>
             </div>
-            <DeleteRoundedIcon sx={{ fontSize: 17 }} className="cursor-pointer hover:text-red-600"
-                onClick={handleTrash} />
+            <div className='flex gap-2 items-center'>
+                {
+                    note.isTrash && (
+                        <RestoreFromTrashOutlinedIcon sx={{ fontSize: 17 }}
+                            onClick={resetNoteFunction}
+                            className='cursor-pointer' />
+                    )
+                }
+                <DeleteRoundedIcon sx={{ fontSize: 17 }} className="cursor-pointer hover:text-red-600"
+                    onClick={handleTrash} />
+            </div>
+
         </div>
     )
 }
