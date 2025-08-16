@@ -10,6 +10,7 @@ import DarkModeIcon from "@mui/icons-material/DarkMode";
 import { DarkModeType, SidebarMenu, SingleCodeLanguageType, singleNoteType, SingleTagType } from "@/app/Types";
 import { v4 as uuidv4 } from "uuid";
 import { SiJavascript } from "react-icons/si";
+import formatDate from "@/app/utils/Time";
 
 interface GlobalContextType {
     sideBarMenuObject: {
@@ -99,9 +100,9 @@ const ContextProvider = createContext<GlobalContextType>({
         selectedTags: [],
         setSelectedTags: () => { }
     },
-    selectedLanguageObject:{
+    selectedLanguageObject: {
         selectedLanguage: null,
-        setSelectedLanguage: ()=> {}
+        setSelectedLanguage: () => { }
     }
 })
 
@@ -156,7 +157,7 @@ export default function GlobalContextProvider({
     const [isNewNote, setIsNewNote] = useState(false);
     const [alltags, setAllTags] = useState<SingleTagType[]>([]);
     const [selectedTags, setSelectedTags] = useState<SingleTagType[]>([])
-    const [selectedLanguage,setSelectedLanguage] = useState<SingleCodeLanguageType | null>(null);
+    const [selectedLanguage, setSelectedLanguage] = useState<SingleCodeLanguageType | null>(null);
 
     const handleResize = () => {
         setIsMobile(window.innerWidth <= 640);
@@ -188,7 +189,8 @@ export default function GlobalContextProvider({
                 functions a(){
                 console.log("b");}`,
                 language: "JavaScript",
-                creationDate: new Date().toISOString()
+                creationDate: new Date().toISOString(),
+                isTrash: false
             },
             {
                 _id: uuidv4(),
@@ -203,7 +205,8 @@ export default function GlobalContextProvider({
                     console.log('Hello!');
                 }`,
                 language: "JavaScript",
-                creationDate: new Date().toISOString()
+                creationDate: new Date().toISOString(),
+                isTrash: false
             }
             ];
 
@@ -244,6 +247,20 @@ export default function GlobalContextProvider({
     useEffect(() => {
         setSelectedTags(selectedNote?.tags || []);
     }, [selectedNote])
+
+    useEffect(() => {
+        if (openContentNote === false) {
+            const filteredNotes = allNotes.filter((note) => {
+                return (
+                    note.title.trim() !== "" || note.description.trim() !== "" || note.code.trim() !== ""
+                )
+            });
+            setAllNotes(filteredNotes);
+        }
+
+
+        
+    }, [openContentNote])
 
 
     return (
@@ -288,7 +305,7 @@ export default function GlobalContextProvider({
                 selectedTags,
                 setSelectedTags
             },
-            selectedLanguageObject:{
+            selectedLanguageObject: {
                 selectedLanguage,
                 setSelectedLanguage
             }

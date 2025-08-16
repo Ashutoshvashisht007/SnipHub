@@ -2,6 +2,7 @@ export interface singleNoteType {
     _id: string;
     title: string;
     isFavorite: boolean;
+    isTrash: boolean;
     tags: SingleTagType[];
     description: string;
     code: string;

@@ -42,7 +42,14 @@ function ContentNote() {
     useEffect(() => {
         if (isNewNote) {
             if (singleNote && singleNote.title !== "") {
-                setAllNotes([...allNotes, singleNote])
+                const updateAllNotes = ([...allNotes, singleNote])
+                // sort all notes by date
+                const sortedAllNotes = updateAllNotes.sort((a,b) => {
+                    return (
+                        new Date(b.creationDate).getTime() - new Date(a.creationDate).getTime()
+                    )
+                });
+                setAllNotes(sortedAllNotes);
                 setIsNewNote(false);
             }
         }
@@ -51,6 +58,7 @@ function ContentNote() {
     useEffect(() => {
         console.log("Dark mode updated:", darkMode);
     }, [darkMode]);
+
     // Update language in current note
     useEffect(() => {
         if (selectedLanguage && singleNote) {
@@ -73,7 +81,7 @@ function ContentNote() {
     }, [selectedLanguage])
 
     return (
-        <div className={`border ${isMobile ? "w-4/5" : "w-1/2"} z-502  p-3 rounded-lg ${openContentNote ? "block" : "hidden"} h-[700px] ${isMobile ? "absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" : ""} ${darkMode[1].isSelected ? "bg-slate-700" : "bg-gray-100"}`}>
+        <div className={`border ${isMobile ? "w-4/5 mt-[50%] shadow-lg h-[1040px]" : "w-1/2"} z-502  p-3 rounded-lg ${openContentNote ? "block" : "hidden"} ${isMobile ? "absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" : ""} ${darkMode[1].isSelected ? "bg-slate-700" : "bg-gray-100"}`}>
             {
                 singleNote && (
                     <ContentNoteHeader singleNote={singleNote} setSingleNote={setSingleNote} />
@@ -394,7 +402,7 @@ function CodeBlock({ singleNote, setSingleNote }: { singleNote: singleNoteType |
                     theme="tomorrow"
                     name="blah2"
                     width="100%"
-                    height="390px"
+                    height="620px"
                     fontSize={14}
                     lineHeight={19}
                     showPrintMargin={false}

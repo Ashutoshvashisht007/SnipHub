@@ -5,6 +5,7 @@ import { useGlobalContext } from "../../../../../../ContextApi";
 import {v4 as uuidv4} from "uuid";
 import { useRef } from "react";
 import { singleNoteType } from "@/app/Types";
+import formatDate from "@/app/utils/Time";
 
 function SearchBar() {
 
@@ -28,12 +29,13 @@ function AddSnippetButton() {
         const newSingleNote = {
             _id: uuidv4(),
             title: "",
-            creationDate: "",
+            creationDate: new Date().toISOString(),
             tags: [],
             description: "",
             code: "",
             isFavorite: false,
             language: "",
+            isTrash: false,
         };
 
         // setAllNotes([...allNotes,newSingleNote]);
@@ -42,6 +44,8 @@ function AddSnippetButton() {
         setSelectedNote(newSingleNote);
         setOpenContentNote(true);
     }
+
+    
 
     return (
         <div className="absolute flex gap-2 px-3 rounded-3xl bg-purple-600 p-1 text-[13px] text-white top-[5px] right-[6px] items-center cursor-pointer select-none"
