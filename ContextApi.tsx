@@ -7,8 +7,9 @@ import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined
 import LogoutIcon from "@mui/icons-material/Logout";
 import LightModeIcon from "@mui/icons-material/LightMode";
 import DarkModeIcon from "@mui/icons-material/DarkMode";
-import { DarkModeType, SidebarMenu, SingleCodeLanguageType, singleNoteType, SingleTagType } from "@/app/Types";
+import { CodeLanguagesCounterType, DarkModeType, SidebarMenu, SingleCodeLanguageType, singleNoteType, SingleTagType } from "@/app/Types";
 import { v4 as uuidv4 } from "uuid";
+import StyleOutlinedIcon from "@mui/icons-material/StyleOutlined";
 
 interface GlobalContextType {
     sideBarMenuObject: {
@@ -54,6 +55,22 @@ interface GlobalContextType {
     selectedLanguageObject: {
         selectedLanguage: SingleCodeLanguageType | null,
         setSelectedLanguage: React.Dispatch<React.SetStateAction<SingleCodeLanguageType | null>>
+    },
+    openConfirmationWindowObject:{
+        openConfirmationWindow: boolean,
+        setOpenConfirmationWindow: React.Dispatch<React.SetStateAction<boolean>>;
+    },
+    codeLanguageCounterObject: {
+        codeLanguageCounter: CodeLanguagesCounterType[],
+        setCodeLanguageCounter: React.Dispatch<React.SetStateAction<CodeLanguagesCounterType[]>>;
+    },
+    openTagsWindowObject: {
+        openTagsWindow: boolean,
+        setOpenTagsWindow: React.Dispatch<React.SetStateAction<boolean>>;
+    },
+    tagsAndLogoutMenuObject: {
+        tagsAndLogoutMenu: SidebarMenu[],
+        setTagsAndLogoutMenu: React.Dispatch<React.SetStateAction<SidebarMenu[]>>;
     }
 }
 
@@ -101,6 +118,22 @@ const ContextProvider = createContext<GlobalContextType>({
     selectedLanguageObject: {
         selectedLanguage: null,
         setSelectedLanguage: () => { }
+    },
+    openConfirmationWindowObject: {
+        openConfirmationWindow: false,
+        setOpenConfirmationWindow: () => {}
+    },
+    codeLanguageCounterObject: {
+        codeLanguageCounter: [],
+        setCodeLanguageCounter: ()=> {}
+    },
+    openTagsWindowObject: {
+        openTagsWindow: false,
+        setOpenTagsWindow: () => {}
+    },
+    tagsAndLogoutMenuObject: {
+        tagsAndLogoutMenu: [],
+        setTagsAndLogoutMenu: ()=> {}
     }
 })
 
@@ -128,10 +161,16 @@ export default function GlobalContextProvider({
         },
         {
             id: 4,
-            name: "Log out",
+            name: "Tags",
             isSelected: false,
-            icons: <LogoutIcon sx={{ fontSize: 18 }} />
-        }
+            icons: <StyleOutlinedIcon sx={{fontSize: 18}} />
+        },
+        {
+            id: 5,
+            name: "Log Out",
+            isSelected: false,
+            icons: <StyleOutlinedIcon sx={{fontSize: 18}} />
+        },
     ]);
 
     const [darkMode, setDarkMode] = useState<DarkModeType[]>([
@@ -156,6 +195,23 @@ export default function GlobalContextProvider({
     const [alltags, setAllTags] = useState<SingleTagType[]>([]);
     const [selectedTags, setSelectedTags] = useState<SingleTagType[]>([])
     const [selectedLanguage, setSelectedLanguage] = useState<SingleCodeLanguageType | null>(null);
+    const [openConfirmationWindow, setOpenConfirmationWindow] = useState(false);
+    const [codeLanguageCounter, setCodeLanguageCounter] = useState<CodeLanguagesCounterType[]>([]);
+    const [openTagsWindow, setOpenTagsWindow] = useState(false);
+    const [tagsAndLogoutMenu, setTagsAndLogoutMenu] = useState<SidebarMenu[]>([
+        {
+            id: 1,
+            name: "Tags",
+            isSelected: false,
+            icons: <StyleOutlinedIcon sx={{fontSize: 18}} />
+        },
+        {
+            id: 2,
+            name: "Log Out",
+            isSelected: false,
+            icons: <StyleOutlinedIcon sx={{fontSize: 18}} />
+        },
+    ]);
 
     const handleResize = () => {
         setIsMobile(window.innerWidth <= 640);
@@ -260,6 +316,24 @@ export default function GlobalContextProvider({
         
     }, [openContentNote])
 
+    useEffect(()=> {
+        const languageCounts: Record<string,number> = {};
+        allNotes.forEach((note)=> {
+            const language = note.language.toLowerCase();
+            if(languageCounts[language]){
+                languageCounts[language]++;
+            }else{
+                languageCounts[language] = 1;
+            }
+        });
+
+        const convertedLanguageCounts : CodeLanguagesCounterType[] = Object.entries(languageCounts).map(([language,count]) => ({
+            language, count
+        })).sort((a,b) => b.count - a.count);
+
+        setCodeLanguageCounter(convertedLanguageCounts);
+    }, [allNotes]);
+
 
     return (
         <ContextProvider.Provider value={{
@@ -306,6 +380,22 @@ export default function GlobalContextProvider({
             selectedLanguageObject: {
                 selectedLanguage,
                 setSelectedLanguage
+            },
+            openConfirmationWindowObject: {
+                openConfirmationWindow,
+                setOpenConfirmationWindow
+            },
+            codeLanguageCounterObject: {
+                codeLanguageCounter,
+                setCodeLanguageCounter
+            },
+            openTagsWindowObject: {
+                openTagsWindow,
+                setOpenTagsWindow
+            },
+            tagsAndLogoutMenuObject: {
+                tagsAndLogoutMenu,
+                setTagsAndLogoutMenu
             }
         }}>
             {children}

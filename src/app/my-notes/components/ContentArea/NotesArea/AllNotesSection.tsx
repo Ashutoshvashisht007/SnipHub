@@ -15,47 +15,65 @@ import { Checkbox } from '@mui/material';
 import ReplayIcon from '@mui/icons-material/Replay';
 import toast from 'react-hot-toast';
 import { truncateString, formatDate } from '@/app/utils/Utils';
+import EmptyPlaceHolder from '@/app/utils/EmptyPlaceHolder';
+import TextSnippetOutlinedIcon from '@mui/icons-material/TextSnippetOutlined';
+import { DeleteOutlineOutlined } from '@mui/icons-material';
+import TagsWindow from '../../TagsWindow/TagsWindow';
 
 const AllNotesSection = () => {
 
-    const { allNotesObject: { allNotes }, sideBarMenuObject: { sideBarMenu }, openContentNoteObject: {openContentNote, setOpenContentNote} } = useGlobalContext();
+    const {
+        allNotesObject: { allNotes },
+        sideBarMenuObject: { sideBarMenu },
+        openContentNoteObject: { openContentNote, setOpenContentNote }
+    } = useGlobalContext();
 
-    const filterIsTrahsedNotes = allNotes.filter((note) => note.isTrash === false);
+    let filteredNotes: singleNoteType[] = [];
 
-    const [filteredNotes, setFilteredNotes] = useState(allNotes.filter((note) => note.isTrash === false));
-
-    useEffect(() => {
-        if (sideBarMenu[0].isSelected) {
-            setFilteredNotes(allNotes.filter((note) => !note.isTrash))
-        }
-
-        if (sideBarMenu[1].isSelected) {
-            setFilteredNotes(allNotes.filter((note) => note.isFavorite && !note.isTrash));
-        }
-    }, [allNotes]);
-
-    useEffect(() => {
-        if(openContentNote){
-            setOpenContentNote(false);
-        }
-        if (sideBarMenu[0].isSelected) {
-            setFilteredNotes(filterIsTrahsedNotes)
-        }
-        if (sideBarMenu[1].isSelected) {
-            const filteredFavoriteNotes = allNotes.filter((note) => !note.isTrash && note.isFavorite);
-            setFilteredNotes(filteredFavoriteNotes);
-        }
-        if (sideBarMenu[2].isSelected) {
-            const filteredTrashedNotes = allNotes.filter((note) => note.isTrash);
-            setFilteredNotes(filteredTrashedNotes);
-        }
-    }, [sideBarMenu])
+    if (sideBarMenu[0].isSelected) {
+        filteredNotes = allNotes.filter((note) => !note.isTrash);
+    } else if (sideBarMenu[1].isSelected) {
+        filteredNotes = allNotes.filter((note) => note.isFavorite && !note.isTrash);
+    } else if (sideBarMenu[2].isSelected) {
+        filteredNotes = allNotes.filter((note) => note.isTrash);
+    }
 
     return (
-        <div className={`mt-5 flex flex-wrap gap-4`}>
-            {filteredNotes.map(note => (
-                <SingleNote key={note._id} note={note} />
-            ))}
+        <div className="mt-5 flex flex-wrap gap-4">
+            {filteredNotes.length > 0 ? (
+                filteredNotes.map((note) => <SingleNote key={note._id} note={note} />)
+            ) : (
+                <>
+                    {sideBarMenu[0].isSelected && <EmptyPlaceHolder
+                        muiIcon={
+                            <TextSnippetOutlinedIcon sx={{ fontSize: 140 }} />
+                        }
+                        text={
+                            <span className='text-slate-400 text-lg text-center'>It looks like there's no snippets right now</span>
+                        }
+                        isNew={true} />
+                    }
+                    {sideBarMenu[1].isSelected && <EmptyPlaceHolder
+                        muiIcon={
+                            <FavoriteBorderOutlinedIcon sx={{ fontSize: 140 }} />
+                        }
+                        text={
+                            <span className='text-slate-400 text-lg text-center'>It looks like there's no snippets right now</span>
+                        } />
+                    }
+                    {sideBarMenu[2].isSelected && <EmptyPlaceHolder
+                        muiIcon={
+                            <DeleteOutlineOutlined sx={{ fontSize: 140 }} />
+                        }
+                        text={
+                            <span className='text-slate-400 text-lg text-center'>It looks like there's no snippets right now</span>
+                        } />
+                    }
+                    {
+                        sideBarMenu[3].isSelected && <TagsWindow />
+                    }
+                </>
+            )}
         </div>
     )
 }
@@ -81,11 +99,9 @@ function NoteHeader({ title, isFavirote, _id, isTrashed }: { title: string, isFa
 
     const { openContentNoteObject: { setOpenContentNote }, allNotesObject: { allNotes, setAllNotes }, selectedNoteObject: { selectedNote, setSelectedNote } } = useGlobalContext();
 
-    const [isFavorite, setIsFavorite] = useState(false);
-
     const handleClick = (e: React.MouseEvent<HTMLSpanElement, MouseEvent>) => {
         e.preventDefault();
-        if(!isTrashed){
+        if (!isTrashed) {
             setOpenContentNote(true);
         }
         const temp = allNotes.find(note => note._id === _id) || null;
@@ -93,11 +109,9 @@ function NoteHeader({ title, isFavirote, _id, isTrashed }: { title: string, isFa
     }
 
     const handleClickedCheckbox = () => {
-        const newFavorite = !isFavirote;
-        setIsFavorite(newFavorite);
         const newAllNotes = allNotes.map((note) => {
             if (note._id === _id) {
-                return { ...note, isFavorite: newFavorite }
+                return { ...note, isFavorite: !note.isFavorite };
             }
             return note;
         });
@@ -117,7 +131,7 @@ function NoteHeader({ title, isFavirote, _id, isTrashed }: { title: string, isFa
                         checkedIcon={
                             <FavoriteIcon className='text-purple-600 cursor-pointer' />
                         }
-                        checked={isFavorite}
+                        checked={isFavirote}
                         onChange={handleClickedCheckbox}
                     />
                 )
@@ -179,9 +193,17 @@ const CodeBlock: React.FC<CodeBlockProps> = ({ language, code }) => {
 
 function NoteFooter({ footer, note }: { footer: string, note: singleNoteType }) {
 
-    const { allNotesObject: { allNotes, setAllNotes } } = useGlobalContext();
+    const { allNotesObject: { allNotes, setAllNotes }, openConfirmationWindowObject: { setOpenConfirmationWindow }, selectedNoteObject: { setSelectedNote } } = useGlobalContext();
+
 
     const handleTrash = () => {
+
+        if (note.isTrash) {
+            setOpenConfirmationWindow(true);
+            setSelectedNote(note);
+            return;
+        }
+
         toast((t) => (
             <div className='flex gap-2 items-center'>
                 <span>Note has been moved to the trash</span>
@@ -212,7 +234,7 @@ function NoteFooter({ footer, note }: { footer: string, note: singleNoteType }) 
     function resetNoteFunction() {
         setAllNotes((prevNotes) =>
             prevNotes.map((n) =>
-                n._id === note._id ? { ...n, isTrash: false } : note
+                n._id === note._id ? { ...n, isTrash: false } : n
             )
         );
     }

@@ -2,8 +2,9 @@
 
 import React from "react";
 import DataObjectIcon from "@mui/icons-material/DataObject";
-import { SiCplusplus, SiJavascript, SiPython } from "react-icons/si";
 import { useGlobalContext } from "../../../../../ContextApi";
+import getLanguageToIcon from "@/app/utils/LanguageTextToIcon";
+import { captilizeFirstOccurence } from "@/app/utils/Utils";
 
 export default function Sidebar() {
 
@@ -35,7 +36,7 @@ function Logo() {
 
 function QuickLinks() {
 
-    const { sideBarMenuObject: { sideBarMenu, setSideBarMenu } } = useGlobalContext();
+    const { sideBarMenuObject: { sideBarMenu, setSideBarMenu }, tagsAndLogoutMenuObject: {tagsAndLogoutMenu, setTagsAndLogoutMenu} } = useGlobalContext();
     console.log(sideBarMenu);
 
     function clickedMenu(index: number) {
@@ -51,54 +52,69 @@ function QuickLinks() {
         setSideBarMenu(updatedSideBarMenu);
     }
 
+    function clickedTagsorLogout(index: number){
+        const updatedTagsAndLogout = tagsAndLogoutMenu.map((menu, i) => {
+            if (i === index) {
+                return { ...menu, isSelected: true };
+            }
+            else {
+                return { ...menu, isSelected: false };
+            }
+        });
+
+        setTagsAndLogoutMenu(updatedTagsAndLogout);
+    }
+
     return (
         <div className="mt-20 text-sm">
             <div className="font-bold text-slate-400">Quick Links</div>
-            <ul className="text-slate-400 mt-4 flex flex-col gap-2">
+            <ul className="text-slate-400 ${} mt-4 flex flex-col gap-2">
                 {
                     sideBarMenu.map((menu, index) => (
                         <li key={index}
                             onClick={() => clickedMenu(index)}
-                            className={`flex gap-2 items-center select-none
+                            className={`flex ${menu.id === 4 ? "mt-4" : ""} gap-2 items-center select-none
                             ${menu.isSelected ? "bg-purple-600 text-white" : "text-slate-400"} p-[7px] px-2 rounded-md hover:bg-purple-600 hover:text-white cursor-pointer w-[100%]`}>
                             {menu.icons}
                             <span>{menu.name}</span>
                         </li>
                     ))
                 }
-
-
             </ul>
         </div>
     )
 }
 
 function Languages() {
+
+    const { codeLanguageCounterObject: { codeLanguageCounter } } = useGlobalContext();
+
     return (
         <div className="mt-12 text-sm">
-            <div className="font-bold text-slate-400">Languages</div>
-            <div className="mt-5 ml-2 text-slate-400 flex flex-col gap-4">
-                <div className="flex justify-between">
-                    <div className="flex gap-1 items-center">
-                        <SiJavascript size={15} /> Javascript
-                    </div>
-                    <span className="font-bold">3</span>
-                </div>
+            {
+                codeLanguageCounter.length > 0 && (
+                    <>
+                        <div className="font-bold text-slate-400">Languages</div>
+                        <div className="mt-5 ml-2 text-slate-400 flex flex-col gap-4">
+                            {
+                                codeLanguageCounter.map((language, idx) => (
+                                    <div key={idx} className="flex justify-between">
+                                        <div className="flex gap-2 items-center">
+                                            {
+                                                getLanguageToIcon(captilizeFirstOccurence(language.language))
+                                            }
+                                            <span>{captilizeFirstOccurence(language.language)}</span>
+                                        </div>
+                                        <span className="font-bold">{language.count}</span>
+                                    </div>
+                                ))
+                            }
 
-                <div className="flex justify-between">
-                    <div className="flex gap-1 items-center">
-                        <SiPython size={15} /> Python
-                    </div>
-                    <span className="font-bold">5</span>
-                </div>
+                        </div>
+                    </>
+                )
+            }
 
-                <div className="flex justify-between">
-                    <div className="flex gap-1 items-center">
-                        <SiCplusplus size={15} /> C++
-                    </div>
-                    <span className="font-bold">7</span>
-                </div>
-            </div>
         </div>
     )
 }

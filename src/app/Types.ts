@@ -33,3 +33,8 @@ export interface SingleCodeLanguageType {
     name: string;
     icon: React.ReactNode;
 }
+
+export interface CodeLanguagesCounterType{
+    language: string;
+    count: number;
+}

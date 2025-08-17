@@ -39,7 +39,7 @@ function ContentNote() {
             if (singleNote && singleNote.title !== "") {
                 const updateAllNotes = ([...allNotes, singleNote])
                 // sort all notes by date
-                const sortedAllNotes = updateAllNotes.sort((a,b) => {
+                const sortedAllNotes = updateAllNotes.sort((a, b) => {
                     return (
                         new Date(b.creationDate).getTime() - new Date(a.creationDate).getTime()
                     )
@@ -102,14 +102,17 @@ function ContentNoteHeader({ singleNote, setSingleNote }: { singleNote: singleNo
         const newSingleNote = { ...singleNote, title: e.target.value };
         setSingleNote(newSingleNote);
 
-        const newAllNotes = allNotes.map((note) => {
-            if (note._id === singleNote._id) {
-                return newSingleNote;
-            }
-            return note;
-        });
-
-        setAllNotes(newAllNotes);
+        const exists = allNotes.some((note) => note._id === singleNote._id);
+        if (!exists && newSingleNote.title.trim() !== "") {
+            setAllNotes([...allNotes, newSingleNote]);
+            setIsNewNote(false); // ek hi baar add karna hai
+        } else {
+            // warna normal update
+            const newAllNotes = allNotes.map((note) =>
+                note._id === singleNote._id ? newSingleNote : note
+            );
+            setAllNotes(newAllNotes);
+        }
     }
 
     function handleKeyDown(event: React.KeyboardEvent<HTMLTextAreaElement>) {
@@ -119,17 +122,17 @@ function ContentNoteHeader({ singleNote, setSingleNote }: { singleNote: singleNo
     }
 
     useEffect(() => {
-        if(openContentNote){
+        if (openContentNote) {
             textRef.current?.focus();
             setFocus(true);
         }
-    },[openContentNote])
+    }, [openContentNote])
     useEffect(() => {
-        if(singleNote.title !== ""){
+        if (singleNote.title !== "") {
             setFocus(true);
         }
-    },[singleNote.title])
-    
+    }, [singleNote.title])
+
     return (
         <div className="flex justify-between items-center gap-8 mb-4">
             <div className="flex gap-2 w-full items-center">

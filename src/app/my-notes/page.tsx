@@ -4,16 +4,24 @@ import Sidebar from './components/Sidebar/page'
 import ContentArea from './components/ContentArea/ContentArea'
 import { Toaster } from 'react-hot-toast'
 import { useGlobalContext } from '../../../ContextApi'
+import ConfirmationWindow from '../utils/ConfirmationWindow'
 
 
 export default function page(){
 
     const {
-        darkModeObject: {darkMode}
+        darkModeObject: {darkMode}, openConfirmationWindowObject: {openConfirmationWindow}
     } = useGlobalContext();
 
     return (
         <div className='flex h-screen w-full flex-row'>
+            {
+                openConfirmationWindow && (
+                    <div className='fixed w-full h-full bg-black z-50 opacity-20'>
+                    </div>
+                )
+            }
+            <ConfirmationWindow />
             <Toaster 
             toastOptions={{
                 style:{
