@@ -5,22 +5,24 @@ import ContentArea from './components/ContentArea/ContentArea'
 import { Toaster } from 'react-hot-toast'
 import { useGlobalContext } from '../../../ContextApi'
 import ConfirmationWindow from '../utils/ConfirmationWindow'
+import AddTagWindow from './components/TagsWindow/AddTagWindow'
 
 
 export default function page(){
 
     const {
-        darkModeObject: {darkMode}, openConfirmationWindowObject: {openConfirmationWindow}
+        darkModeObject: {darkMode}, openConfirmationWindowObject: {openConfirmationWindow}, openNewTagsWindowObject: {openNewTagsWindow}
     } = useGlobalContext();
 
     return (
         <div className='flex h-screen w-full flex-row'>
             {
-                openConfirmationWindow && (
+                openConfirmationWindow || openNewTagsWindow && (
                     <div className='fixed w-full h-full bg-black z-50 opacity-20'>
                     </div>
                 )
             }
+            <AddTagWindow />
             <ConfirmationWindow />
             <Toaster 
             toastOptions={{

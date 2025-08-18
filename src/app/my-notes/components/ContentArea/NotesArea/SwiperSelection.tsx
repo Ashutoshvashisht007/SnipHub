@@ -17,7 +17,7 @@ import { useGlobalContext } from '../../../../../../ContextApi';
 export default function SwiperSelection() {
 
     const {
-        darkModeObject: { darkMode }
+        darkModeObject: { darkMode }, openNewTagsWindowObject: {setOpenNewTagsWindow}
     } = useGlobalContext();
 
     return (
@@ -44,7 +44,8 @@ export default function SwiperSelection() {
                     
                 </Swiper>
             </div>
-            <button className='bg-purple-600 p-1 rounded-md px-3 flex gap-1 items-center text-white'>
+            <button className='bg-purple-600 p-1 rounded-md px-3 flex gap-1 items-center text-white cursor-pointer'
+            onClick={()=> setOpenNewTagsWindow(true)}>
                 <AddOutlinedIcon sx={{fontSize: 18}} />
                 <span>Tag</span>
             </button>

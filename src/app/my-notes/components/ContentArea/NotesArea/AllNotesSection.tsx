@@ -25,7 +25,7 @@ const AllNotesSection = () => {
     const {
         allNotesObject: { allNotes },
         sideBarMenuObject: { sideBarMenu },
-        openContentNoteObject: { openContentNote, setOpenContentNote }
+        tagsAndLogoutMenuObject: { tagsAndLogoutMenu }
     } = useGlobalContext();
 
     let filteredNotes: singleNoteType[] = [];
@@ -69,11 +69,11 @@ const AllNotesSection = () => {
                             <span className='text-slate-400 text-lg text-center'>It looks like there's no snippets right now</span>
                         } />
                     }
-                    {
-                        sideBarMenu[3].isSelected && <TagsWindow />
-                    }
                 </>
             )}
+            {
+                tagsAndLogoutMenu[0].isSelected && <TagsWindow />
+            }
         </div>
     )
 }

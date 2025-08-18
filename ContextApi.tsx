@@ -71,6 +71,10 @@ interface GlobalContextType {
     tagsAndLogoutMenuObject: {
         tagsAndLogoutMenu: SidebarMenu[],
         setTagsAndLogoutMenu: React.Dispatch<React.SetStateAction<SidebarMenu[]>>;
+    },
+    openNewTagsWindowObject: {
+        openNewTagsWindow: boolean,
+        setOpenNewTagsWindow: React.Dispatch<React.SetStateAction<boolean>>;
     }
 }
 
@@ -134,6 +138,10 @@ const ContextProvider = createContext<GlobalContextType>({
     tagsAndLogoutMenuObject: {
         tagsAndLogoutMenu: [],
         setTagsAndLogoutMenu: ()=> {}
+    },
+    openNewTagsWindowObject: {
+        openNewTagsWindow: false,
+        setOpenNewTagsWindow: () => {}
     }
 })
 
@@ -158,18 +166,6 @@ export default function GlobalContextProvider({
             name: "Trash",
             isSelected: false,
             icons: <DeleteOutlineOutlinedIcon sx={{ fontSize: 18 }} />
-        },
-        {
-            id: 4,
-            name: "Tags",
-            isSelected: false,
-            icons: <StyleOutlinedIcon sx={{fontSize: 18}} />
-        },
-        {
-            id: 5,
-            name: "Log Out",
-            isSelected: false,
-            icons: <StyleOutlinedIcon sx={{fontSize: 18}} />
         },
     ]);
 
@@ -198,6 +194,7 @@ export default function GlobalContextProvider({
     const [openConfirmationWindow, setOpenConfirmationWindow] = useState(false);
     const [codeLanguageCounter, setCodeLanguageCounter] = useState<CodeLanguagesCounterType[]>([]);
     const [openTagsWindow, setOpenTagsWindow] = useState(false);
+    const [openNewTagsWindow, setOpenNewTagsWindow] = useState(false);
     const [tagsAndLogoutMenu, setTagsAndLogoutMenu] = useState<SidebarMenu[]>([
         {
             id: 1,
@@ -334,6 +331,15 @@ export default function GlobalContextProvider({
         setCodeLanguageCounter(convertedLanguageCounts);
     }, [allNotes]);
 
+    useEffect(()=> {
+        if(openTagsWindow){
+            setOpenTagsWindow(false);
+            if(tagsAndLogoutMenu[0].isSelected){
+                tagsAndLogoutMenu[0].isSelected = false;
+            }
+        }
+    }, [sideBarMenu])
+
 
     return (
         <ContextProvider.Provider value={{
@@ -396,6 +402,10 @@ export default function GlobalContextProvider({
             tagsAndLogoutMenuObject: {
                 tagsAndLogoutMenu,
                 setTagsAndLogoutMenu
+            },
+            openNewTagsWindowObject: {
+                openNewTagsWindow,
+                setOpenNewTagsWindow
             }
         }}>
             {children}

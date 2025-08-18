@@ -36,7 +36,8 @@ function Logo() {
 
 function QuickLinks() {
 
-    const { sideBarMenuObject: { sideBarMenu, setSideBarMenu }, tagsAndLogoutMenuObject: {tagsAndLogoutMenu, setTagsAndLogoutMenu} } = useGlobalContext();
+    const { sideBarMenuObject: { sideBarMenu, setSideBarMenu }, tagsAndLogoutMenuObject: {tagsAndLogoutMenu, setTagsAndLogoutMenu},
+openTagsWindowObject: {openTagsWindow, setOpenTagsWindow} } = useGlobalContext();
     console.log(sideBarMenu);
 
     function clickedMenu(index: number) {
@@ -55,7 +56,14 @@ function QuickLinks() {
     function clickedTagsorLogout(index: number){
         const updatedTagsAndLogout = tagsAndLogoutMenu.map((menu, i) => {
             if (i === index) {
-                return { ...menu, isSelected: true };
+                if(menu.isSelected === true){
+                    setOpenTagsWindow(false);
+                    return {...menu, isSelected: false}
+                }
+                else{
+                    setOpenTagsWindow(true);
+                    return { ...menu, isSelected: true };
+                }
             }
             else {
                 return { ...menu, isSelected: false };
@@ -73,6 +81,19 @@ function QuickLinks() {
                     sideBarMenu.map((menu, index) => (
                         <li key={index}
                             onClick={() => clickedMenu(index)}
+                            className={`flex ${menu.id === 4 ? "mt-4" : ""} gap-2 items-center select-none
+                            ${menu.isSelected ? "bg-purple-600 text-white" : "text-slate-400"} p-[7px] px-2 rounded-md hover:bg-purple-600 hover:text-white cursor-pointer w-[100%]`}>
+                            {menu.icons}
+                            <span>{menu.name}</span>
+                        </li>
+                    ))
+                }
+            </ul>
+            <ul className="text-slate-400 ${} mt-6 flex flex-col gap-2">
+                {
+                    tagsAndLogoutMenu.map((menu, index) => (
+                        <li key={index}
+                            onClick={() => clickedTagsorLogout(index)}
                             className={`flex ${menu.id === 4 ? "mt-4" : ""} gap-2 items-center select-none
                             ${menu.isSelected ? "bg-purple-600 text-white" : "text-slate-400"} p-[7px] px-2 rounded-md hover:bg-purple-600 hover:text-white cursor-pointer w-[100%]`}>
                             {menu.icons}
