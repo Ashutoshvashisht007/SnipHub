@@ -229,7 +229,7 @@ function NoteTags({ singleNote, setSingleNote }: { singleNote: singleNoteType | 
                 <div className="flex gap-2 items-center flex-wrap">
                     {
                         singleNote?.tags.length === 0 ? <div className="bg-slate-100 text-slate-400 p-1 px-2 rounded-md">
-                            Not tags
+                            No tags
                         </div> :
                             singleNote?.tags.map((tag) => (
                                 <div key={tag._id} className="bg-slate-100 text-slate-400 p-1 px-2 rounded-md">
@@ -256,7 +256,7 @@ function TagsMenu({ onClickedTag }: { onClickedTag: (tag: SingleTagType) => void
     const { allTagsObject: { alltags }, selctedTagsObject: { selectedTags } } = useGlobalContext();
 
     return (
-        <ul className="absolute top-10 bg-slate-100 w-[60%] p-3 rounded-md flex flex-col gap-2">
+        <ul className="absolute top-10 bg-slate-100 w-[60%] p-3 rounded-md flex flex-col gap-2 z-100">
             {
                 alltags.map((tag) => (
                     <li key={tag._id}

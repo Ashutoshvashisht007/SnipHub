@@ -45,7 +45,7 @@ function Button() {
         (
           <div className="flex gap-2 max-sm:flex-col max-sm:w-full max-sm:mt-8">
             <Link href="/my-notes">
-              <button className="mx-sm:w-full bg-[#8338ec] p-[8px] px-6 text-sm text-white rounded-md">Access To The App</button>
+              <button className="mx-sm:w-full bg-[#8338ec] p-[8px] px-6 text-sm text-white rounded-md cursor-pointer">Access To The App</button>
             </Link>
           </div>
         )
@@ -78,7 +78,7 @@ function CTASection() {
       {userId ?
         (
           <Link href="/my-notes">
-            <button className="mx-sm:w-full bg-[#8338ec] p-[8px] px-6 text-sm text-white rounded-md">Access To The App</button>
+            <button className="mx-sm:w-full bg-[#8338ec] p-[8px] px-6 text-sm text-white rounded-md cursor-pointer">Access To The App</button>
           </Link>
         )
         :

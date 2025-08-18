@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 // Import Swiper React components
 import { Swiper, SwiperSlide } from 'swiper/react';
 import AddOutlinedIcon from '@mui/icons-material/AddOutlined';
@@ -17,8 +17,44 @@ import { useGlobalContext } from '../../../../../../ContextApi';
 export default function SwiperSelection() {
 
     const {
-        darkModeObject: { darkMode }, openNewTagsWindowObject: {setOpenNewTagsWindow}
+        darkModeObject: { darkMode }, openNewTagsWindowObject: {setOpenNewTagsWindow}, allTagsObject: {alltags}
     } = useGlobalContext();
+
+    const [tagsSelected,setTagsSelected] = useState<boolean[]>([]);
+
+    useEffect(()=> {
+        if(alltags){
+            const newTagsSelected = Array(alltags.length).fill(false);
+            newTagsSelected[0] = true;
+            setTagsSelected(newTagsSelected);
+        }
+    },[alltags]);
+
+    const handletagClick = (idx: number) => {
+        const newTagsSelected = [...tagsSelected];
+
+        if(idx === 0){
+            newTagsSelected[0] = true;
+
+            for(let i=1;i<newTagsSelected.length;i++){
+                newTagsSelected[i] = false;
+            }
+            setTagsSelected(newTagsSelected);
+            return;
+        }
+        else{
+            newTagsSelected[0] = false;
+            newTagsSelected[idx] = !newTagsSelected[idx];
+            
+            setTagsSelected(newTagsSelected);
+        }
+
+        if(newTagsSelected.every((tag)=> !tag)){
+            newTagsSelected[0] = true;
+            setTagsSelected(newTagsSelected)
+        }
+    }
+
 
     return (
         <div className={`${darkMode[1].isSelected ? "bg-slate-800 text-white" : "bg-white"} rounded-lg p-3 flex gap-5`}>
@@ -27,21 +63,18 @@ export default function SwiperSelection() {
                     slidesPerView="auto"
                     spaceBetween={10}
                     freeMode={true}
-                    // pagination={{
-                    //     clickable: true,
-                    // }}
                     modules={[FreeMode, Pagination]}
                     className="mySwiper"
                 >
-                    <SwiperSlide className='bg-purple-600 p-1 rounded-md text-white w-20'>All</SwiperSlide>
-                    <SwiperSlide className='text-slate-400'>Slide 2</SwiperSlide>
-                    <SwiperSlide className='text-slate-400'>Slide 2</SwiperSlide>
-                    <SwiperSlide className='text-slate-400'>Slide 2</SwiperSlide>
-                    <SwiperSlide className='text-slate-400'>Slide 2</SwiperSlide>
-                    <SwiperSlide className='text-slate-400'>Slide 2</SwiperSlide>
-                    <SwiperSlide className='text-slate-400'>Slide 2</SwiperSlide>
-                    <SwiperSlide className='text-slate-400'>Slide 2</SwiperSlide>
-                    
+                    {
+                        alltags.map((tag,index) => (
+                            <SwiperSlide key={tag._id}
+                            className={`${tagsSelected[index] ? "bg-purple-600 text-white" : "bg-white text-gray-400"} p-1 rounded-md w-20`}
+                            onClick={()=> handletagClick(index)} >
+                                {tag.name}
+                            </SwiperSlide>
+                        ))
+                    } 
                 </Swiper>
             </div>
             <button className='bg-purple-600 p-1 rounded-md px-3 flex gap-1 items-center text-white cursor-pointer'

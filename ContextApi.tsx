@@ -75,6 +75,10 @@ interface GlobalContextType {
     openNewTagsWindowObject: {
         openNewTagsWindow: boolean,
         setOpenNewTagsWindow: React.Dispatch<React.SetStateAction<boolean>>;
+    },
+    selectedTagToEditObject: {
+        selectedTagToEdit: SingleTagType | null,
+        setSelectedTagToEdit: React.Dispatch<React.SetStateAction<SingleTagType | null>>;
     }
 }
 
@@ -142,6 +146,10 @@ const ContextProvider = createContext<GlobalContextType>({
     openNewTagsWindowObject: {
         openNewTagsWindow: false,
         setOpenNewTagsWindow: () => {}
+    },
+    selectedTagToEditObject: {
+        selectedTagToEdit: null,
+        setSelectedTagToEdit: ()=> {}
     }
 })
 
@@ -209,6 +217,7 @@ export default function GlobalContextProvider({
             icons: <StyleOutlinedIcon sx={{fontSize: 18}} />
         },
     ]);
+    const [selectedTagToEdit, setSelectedTagToEdit] = useState<SingleTagType | null>(null);
 
     const handleResize = () => {
         setIsMobile(window.innerWidth <= 640);
@@ -268,7 +277,7 @@ export default function GlobalContextProvider({
         function updateAllTags() {
             const allTags = [
                 {
-                    _id: uuidv4(), name: "tag1"
+                    _id: uuidv4(), name: "All"
                 },
                 {
                     _id: uuidv4(), name: "tag2"
@@ -406,6 +415,10 @@ export default function GlobalContextProvider({
             openNewTagsWindowObject: {
                 openNewTagsWindow,
                 setOpenNewTagsWindow
+            },
+            selectedTagToEditObject:{
+                selectedTagToEdit,
+                setSelectedTagToEdit
             }
         }}>
             {children}

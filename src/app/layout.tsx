@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
-import { ClerkProvider } from '@clerk/nextjs'
 import { Poppins } from "next/font/google";
 import GlobalContextProvider from "../../ContextApi";
 import "./globals.css";
+import ClerkWrapper from "./components/ClerkWrapper";
 
 const poppins = Poppins({
   subsets: ["latin"],
@@ -22,7 +22,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <ClerkProvider>
+      <ClerkWrapper>
         <GlobalContextProvider>
           <body
             className={poppins.className}
@@ -30,7 +30,7 @@ export default function RootLayout({
             {children}
           </body>
         </GlobalContextProvider>
-      </ClerkProvider>
+      </ClerkWrapper>
     </html>
   );
 }
