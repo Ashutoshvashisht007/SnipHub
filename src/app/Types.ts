@@ -1,5 +1,6 @@
 export interface singleNoteType {
     _id: string;
+    clerkUserId: string;
     title: string;
     isFavorite: boolean;
     isTrash: boolean;
@@ -25,6 +26,7 @@ export interface DarkModeType {
 
 export interface SingleTagType{
     _id: string;
+    clerkUserId: string;
     name: string;
 }
 

@@ -19,23 +19,55 @@ import EmptyPlaceHolder from '@/app/utils/EmptyPlaceHolder';
 import TextSnippetOutlinedIcon from '@mui/icons-material/TextSnippetOutlined';
 import { DeleteOutlineOutlined } from '@mui/icons-material';
 import TagsWindow from '../../TagsWindow/TagsWindow';
+import { FaBullseye } from 'react-icons/fa';
 
 const AllNotesSection = () => {
 
     const {
         allNotesObject: { allNotes },
         sideBarMenuObject: { sideBarMenu },
-        tagsAndLogoutMenuObject: { tagsAndLogoutMenu }
+        tagsAndLogoutMenuObject: { tagsAndLogoutMenu },
+        tagsClickedObject: { tagsClicked, setTagsClicked },
+        isLoadingObject: { isLoading, setIsLoading }
     } = useGlobalContext();
 
     let filteredNotes: singleNoteType[] = [];
 
     if (sideBarMenu[0].isSelected) {
-        filteredNotes = allNotes.filter((note) => !note.isTrash);
+        if (tagsClicked.length === 1 && tagsClicked[0] === "All") {
+            filteredNotes = allNotes.filter((note) => !note.isTrash);
+        }
+        else if (tagsClicked.length > 0) {
+            filteredNotes = allNotes.filter((note) => {
+                return tagsClicked.every((selectedTags) => note.tags.some((noteTag) => noteTag.name === selectedTags))
+            }).filter((note) => !note.isTrash);
+        }
     } else if (sideBarMenu[1].isSelected) {
         filteredNotes = allNotes.filter((note) => note.isFavorite && !note.isTrash);
     } else if (sideBarMenu[2].isSelected) {
         filteredNotes = allNotes.filter((note) => note.isTrash);
+    }
+
+    if (isLoading) {
+        return (
+            <div className='mt-5 flex flex-wrap gap-4'>
+                <ShimmerNoteEffect />
+                <ShimmerNoteEffect />
+                <ShimmerNoteEffect />
+            </div>
+        )
+    }
+
+    function ShimmerNoteEffect() {
+        return (
+            <div className='h-[380px] w-[300px] bg-slate-200 rounded-md flex-col'>
+                <div className='flex justify-between px-5 pt-5'>
+                    <div className='2-1/2 h-7 bg-slate-300 rounded-sm'></div>
+                    <div className='w-7 h-7 bg-slate-300 rounded-sm'></div>
+                </div>
+                <div className='h-[230px] mt-12 w-full bg-slate-300'></div>
+            </div>
+        )
     }
 
     return (
@@ -44,33 +76,58 @@ const AllNotesSection = () => {
                 filteredNotes.map((note) => <SingleNote key={note._id} note={note} />)
             ) : (
                 <>
-                    {sideBarMenu[0].isSelected && <EmptyPlaceHolder
-                        muiIcon={
-                            <TextSnippetOutlinedIcon sx={{ fontSize: 140 }} />
-                        }
-                        text={
-                            <span className='text-slate-400 text-lg text-center'>It looks like there's no snippets right now</span>
-                        }
-                        isNew={true} />
-                    }
-                    {sideBarMenu[1].isSelected && <EmptyPlaceHolder
-                        muiIcon={
-                            <FavoriteBorderOutlinedIcon sx={{ fontSize: 140 }} />
-                        }
-                        text={
-                            <span className='text-slate-400 text-lg text-center'>It looks like there's no snippets right now</span>
-                        } />
-                    }
-                    {sideBarMenu[2].isSelected && <EmptyPlaceHolder
-                        muiIcon={
-                            <DeleteOutlineOutlined sx={{ fontSize: 140 }} />
-                        }
-                        text={
-                            <span className='text-slate-400 text-lg text-center'>It looks like there's no snippets right now</span>
-                        } />
-                    }
+                    {sideBarMenu[0].isSelected && (
+                        <>
+                            {filteredNotes.length === 0 ? (
+                                tagsClicked.filter((tag) => tag !== "All").length > 0 ? (
+                                    <EmptyPlaceHolder
+                                        muiIcon={<TextSnippetOutlinedIcon sx={{ fontSize: 140 }} />}
+                                        text={
+                                            <span className="text-slate-400 text-lg text-center">
+                                                It looks like there's no snippets <br /> with these tags
+                                            </span>
+                                        }
+                                        isNew={true}
+                                    />
+                                ) : (
+                                    <EmptyPlaceHolder
+                                        muiIcon={<TextSnippetOutlinedIcon sx={{ fontSize: 140 }} />}
+                                        text={
+                                            <span className="text-slate-400 text-lg text-center">
+                                                It looks like there's no snippets right now
+                                            </span>
+                                        }
+                                        isNew={true}
+                                    />
+                                )
+                            ) : null}
+                        </>
+                    )}
+
+                    {sideBarMenu[1].isSelected && (
+                        <EmptyPlaceHolder
+                            muiIcon={<FavoriteBorderOutlinedIcon sx={{ fontSize: 140 }} />}
+                            text={
+                                <span className="text-slate-400 text-lg text-center">
+                                    It looks like there's no snippets right now
+                                </span>
+                            }
+                        />
+                    )}
+
+                    {sideBarMenu[2].isSelected && (
+                        <EmptyPlaceHolder
+                            muiIcon={<DeleteOutlineOutlined sx={{ fontSize: 140 }} />}
+                            text={
+                                <span className="text-slate-400 text-lg text-center">
+                                    It looks like there's no snippets right now
+                                </span>
+                            }
+                        />
+                    )}
                 </>
             )}
+
             {
                 tagsAndLogoutMenu[0].isSelected && <TagsWindow />
             }
@@ -108,15 +165,30 @@ function NoteHeader({ title, isFavirote, _id, isTrashed }: { title: string, isFa
         setSelectedNote(temp);
     }
 
-    const handleClickedCheckbox = () => {
-        const newAllNotes = allNotes.map((note) => {
-            if (note._id === _id) {
-                return { ...note, isFavorite: !note.isFavorite };
-            }
-            return note;
-        });
+    const handleClickedCheckbox = async () => {
+        const currentFav = isFavirote;
+        const newFav = !currentFav;
 
-        setAllNotes(newAllNotes);
+        try {
+            const response = await fetch(`/api/snippets?snippetId=${_id}`, {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ isFavorite: isFavirote })
+            })
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const updateNote = await response.json();
+
+            setAllNotes((prevnotes) => prevnotes.map((note) => note._id === _id ? { ...note, isFavorite: newFav } : note));
+
+        } catch (error) {
+            console.log(error);
+        }
     }
 
     return (
@@ -196,7 +268,7 @@ function NoteFooter({ footer, note }: { footer: string, note: singleNoteType }) 
     const { allNotesObject: { allNotes, setAllNotes }, openConfirmationWindowObject: { setOpenConfirmationWindow }, selectedNoteObject: { setSelectedNote } } = useGlobalContext();
 
 
-    const handleTrash = () => {
+    const handleTrash = async () => {
 
         if (note.isTrash) {
             setOpenConfirmationWindow(true);
@@ -210,7 +282,7 @@ function NoteFooter({ footer, note }: { footer: string, note: singleNoteType }) 
                 <button className='bg-gray-500 p-[4px] px-3 text-sm text-white rounded-md flex gap-1 items-center'
                     onClick={() => {
                         toast.dismiss(t.id);
-                        resetNoteFunction();
+                        resetNoteFunction(note._id);
                     }}>
                     <ReplayIcon sx={{ fontSize: 17 }} />
                     <span className='cursor-pointer'>Undo</span>
@@ -218,25 +290,48 @@ function NoteFooter({ footer, note }: { footer: string, note: singleNoteType }) 
             </div>
         ));
 
-        const copyAllNotes = [...allNotes];
-        const findIdx = copyAllNotes.findIndex((n) => n._id === note._id);
+        try {
+            const response = await fetch(`/api/snippets?snippetId=${note._id}`, {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ isTrash: true })
+            })
 
-        if (findIdx === -1) {
-            console.error("Note not found!");
-            return;
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const updateNote = await response.json();
+            setAllNotes((prevNotes) => prevNotes.map((n) => n._id === note._id ? { ...n, isTrash: true } : n));
+
+
+        } catch (error) {
+            console.log(error);
         }
-
-        const clickedNote = { ...copyAllNotes[findIdx], isTrash: true };
-        copyAllNotes[findIdx] = clickedNote;
-        setAllNotes(copyAllNotes);
     }
 
-    function resetNoteFunction() {
-        setAllNotes((prevNotes) =>
-            prevNotes.map((n) =>
-                n._id === note._id ? { ...n, isTrash: false } : n
-            )
-        );
+    const resetNoteFunction = async (noteId: string) => {
+        try {
+            const response = await fetch(`/api/snippets?snippetId=${noteId}`, {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ isTrash: false })
+            })
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const updateNote = await response.json();
+            setAllNotes((prevNotes) => prevNotes.map((n) => n._id === note._id ? { ...n, isTrash: false } : n));
+            toast.success("Note has been restored");
+        } catch (error) {
+            console.log(error);
+        }
     }
     return (
         <div className='flex justify-between text-[13px] text-slate-400 mx-4 mt-3'>
@@ -248,7 +343,7 @@ function NoteFooter({ footer, note }: { footer: string, note: singleNoteType }) 
                 {
                     note.isTrash && (
                         <RestoreFromTrashOutlinedIcon sx={{ fontSize: 17 }}
-                            onClick={resetNoteFunction}
+                            onClick={() => resetNoteFunction(note._id)}
                             className='cursor-pointer' />
                     )
                 }

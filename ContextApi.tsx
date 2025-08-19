@@ -10,6 +10,7 @@ import DarkModeIcon from "@mui/icons-material/DarkMode";
 import { CodeLanguagesCounterType, DarkModeType, SidebarMenu, SingleCodeLanguageType, singleNoteType, SingleTagType } from "@/app/Types";
 import { v4 as uuidv4 } from "uuid";
 import StyleOutlinedIcon from "@mui/icons-material/StyleOutlined";
+import { useUser } from "@clerk/nextjs";
 
 interface GlobalContextType {
     sideBarMenuObject: {
@@ -79,6 +80,18 @@ interface GlobalContextType {
     selectedTagToEditObject: {
         selectedTagToEdit: SingleTagType | null,
         setSelectedTagToEdit: React.Dispatch<React.SetStateAction<SingleTagType | null>>;
+    },
+    tagsClickedObject: {
+        tagsClicked: string[],
+        setTagsClicked: React.Dispatch<React.SetStateAction<string[]>>;
+    },
+    isLoadingObject: {
+        isLoading: boolean,
+        setIsLoading: React.Dispatch<React.SetStateAction<boolean>>;
+    },
+    shareUserIdObject: {
+        shareUserId: string,
+        setShareUserId: React.Dispatch<React.SetStateAction<string>>;
     }
 }
 
@@ -150,6 +163,18 @@ const ContextProvider = createContext<GlobalContextType>({
     selectedTagToEditObject: {
         selectedTagToEdit: null,
         setSelectedTagToEdit: ()=> {}
+    },
+    tagsClickedObject: {
+        tagsClicked: [],
+        setTagsClicked: ()=> {}
+    },
+    isLoadingObject: {
+        isLoading: true,
+        setIsLoading: () => {}
+    },
+    shareUserIdObject: {
+        shareUserId: "",
+        setShareUserId: ()=> {}
     }
 })
 
@@ -218,6 +243,16 @@ export default function GlobalContextProvider({
         },
     ]);
     const [selectedTagToEdit, setSelectedTagToEdit] = useState<SingleTagType | null>(null);
+    const [tagsClicked, setTagsClicked] = useState<string[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const {isLoaded, isSignedIn, user} = useUser();
+    const [shareUserId, setShareUserId] = useState<string>("");
+
+    useEffect(()=> {
+        if(user){
+            setShareUserId(user?.id);
+        }
+    },[isLoaded,user]);
 
     const handleResize = () => {
         setIsMobile(window.innerWidth <= 640);
@@ -232,77 +267,34 @@ export default function GlobalContextProvider({
     }, [])
 
     useEffect(() => {
-        function updateAllNotes() {
-            const AllNotes = [{
-                _id: uuidv4(),
-                title: "Sample Note",
-                isFavorite: false,
-                tags: [{
-                    _id: uuidv4(),
-                    name: "tag1"
-                }, {
-                    _id: uuidv4(),
-                    name: "tag2"
-                }],
-                description: "This is a sample note description.",
-                code: `console.log('Hello, world!');
-                functions a(){
-                console.log("b");}`,
-                language: "JavaScript",
-                creationDate: new Date().toISOString(),
-                isTrash: false,
-            },
-            {
-                _id: uuidv4(),
-                title: "Another Note",
-                isFavorite: false,
-                tags: [{
-                    _id: uuidv4(),
-                    name: "tag3"
-                }],
-                description: "This is another note description.",
-                code: `function greet() {
-                    console.log('Hello!');
-                }`,
-                language: "JavaScript",
-                creationDate: new Date().toISOString(),
-                isTrash: false
+        const fetchAllNotes = async () => {
+            try {
+                const response = await fetch(`/api/snippets?clerkId=${user?.id}`);
+                if(!response.ok){
+                    throw new Error("Failed to fetch snippets");
+                }
+                const data: {notes: singleNoteType[]} = await response.json();
+                if(data.notes){
+                    const sortedAllNotes: singleNoteType[] = data.notes.sort((a,b) => {
+                        return (
+                            new Date(b.creationDate).getTime() - new Date(a.creationDate).getTime()
+                        );
+                    });
+
+                    setAllNotes(sortedAllNotes);
+                }
+            } catch (error) {
+                console.log(error);
+            }finally{
+                setIsLoading(false);
             }
-            ];
-
-            setTimeout(() => {
-                setAllNotes(AllNotes);
-            }, 1200);
-        }
-        function updateAllTags() {
-            const allTags = [
-                {
-                    _id: uuidv4(), name: "All"
-                },
-                {
-                    _id: uuidv4(), name: "tag2"
-                },
-                {
-                    _id: uuidv4(), name: "tag3"
-                },
-                {
-                    _id: uuidv4(), name: "tag4"
-                },
-                {
-                    _id: uuidv4(), name: "tag5"
-                },
-                {
-                    _id: uuidv4(), name: "tag6"
-                },
-            ];
-
-            setAllTags(allTags);
         }
 
-        updateAllNotes();
-        updateAllTags();
+        if(isLoaded && isSignedIn){
+            fetchAllNotes();
+        }
 
-    }, [])
+    }, [user, isLoaded, isSignedIn])
 
     useEffect(() => {
         setSelectedTags(selectedNote?.tags || []);
@@ -419,6 +411,18 @@ export default function GlobalContextProvider({
             selectedTagToEditObject:{
                 selectedTagToEdit,
                 setSelectedTagToEdit
+            },
+            tagsClickedObject: {
+                tagsClicked,
+                setTagsClicked
+            },
+            isLoadingObject: {
+                isLoading,
+                setIsLoading
+            },
+            shareUserIdObject: {
+                shareUserId,
+                setShareUserId
             }
         }}>
             {children}

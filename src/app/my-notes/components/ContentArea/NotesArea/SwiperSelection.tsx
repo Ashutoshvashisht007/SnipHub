@@ -17,39 +17,75 @@ import { useGlobalContext } from '../../../../../../ContextApi';
 export default function SwiperSelection() {
 
     const {
-        darkModeObject: { darkMode }, openNewTagsWindowObject: {setOpenNewTagsWindow}, allTagsObject: {alltags}
+        darkModeObject: { darkMode }, openNewTagsWindowObject: { setOpenNewTagsWindow }, allTagsObject: { alltags }, tagsClickedObject: { setTagsClicked },
+        sideBarMenuObject: { sideBarMenu },
+        isLoadingObject: { isLoading }
     } = useGlobalContext();
 
-    const [tagsSelected,setTagsSelected] = useState<boolean[]>([]);
+    const [tagsSelected, setTagsSelected] = useState<boolean[]>([]);
 
-    useEffect(()=> {
-        if(alltags){
+    useEffect(() => {
+        setTagsClicked((prevTagsClicked) => {
+            const newTagClicked = alltags.reduce((acc, tag, idx) => {
+                if (tagsSelected[idx]) {
+                    if (!prevTagsClicked.includes(tag.name)) {
+                        acc.push(tag.name);
+                    }
+                }
+                else {
+                    if (prevTagsClicked.includes(tag.name)) {
+                        const tagIndex = acc.indexOf(tag.name);
+                        if (tagIndex !== -1) {
+                            acc.splice(tagIndex, 1);
+                        }
+                    }
+                }
+                return acc;
+            }, [...prevTagsClicked]);
+            return newTagClicked;
+        });
+    }, [tagsSelected])
+    // console.log(tagsClicked);
+
+
+    useEffect(() => {
+        if (alltags) {
             const newTagsSelected = Array(alltags.length).fill(false);
             newTagsSelected[0] = true;
             setTagsSelected(newTagsSelected);
         }
-    },[alltags]);
+    }, [alltags]);
+
+    useEffect(() => {
+        if (sideBarMenu) {
+            const newTagsSelected = Array(alltags.length).fill(false);
+            const newTagsClicked = ["All"];
+            newTagsSelected[0] = true;
+            setTagsClicked(newTagsClicked);
+            setTagsSelected(newTagsSelected);
+        }
+    }, [sideBarMenu])
 
     const handletagClick = (idx: number) => {
         const newTagsSelected = [...tagsSelected];
 
-        if(idx === 0){
+        if (idx === 0) {
             newTagsSelected[0] = true;
 
-            for(let i=1;i<newTagsSelected.length;i++){
+            for (let i = 1; i < newTagsSelected.length; i++) {
                 newTagsSelected[i] = false;
             }
             setTagsSelected(newTagsSelected);
             return;
         }
-        else{
+        else {
             newTagsSelected[0] = false;
             newTagsSelected[idx] = !newTagsSelected[idx];
-            
+
             setTagsSelected(newTagsSelected);
         }
 
-        if(newTagsSelected.every((tag)=> !tag)){
+        if (newTagsSelected.every((tag) => !tag)) {
             newTagsSelected[0] = true;
             setTagsSelected(newTagsSelected)
         }
@@ -59,30 +95,38 @@ export default function SwiperSelection() {
     return (
         <div className={`${darkMode[1].isSelected ? "bg-slate-800 text-white" : "bg-white"} rounded-lg p-3 flex gap-5`}>
             <div className='overflow-x-auto w-full max-w-full'>
-                <Swiper
-                    slidesPerView="auto"
-                    spaceBetween={10}
-                    freeMode={true}
-                    modules={[FreeMode, Pagination]}
-                    className="mySwiper"
-                >
-                    {
-                        alltags.map((tag,index) => (
-                            <SwiperSlide key={tag._id}
-                            className={`${tagsSelected[index] ? "bg-purple-600 text-white" : "bg-white text-gray-400"} p-1 rounded-md w-20`}
-                            onClick={()=> handletagClick(index)} >
-                                {tag.name}
-                            </SwiperSlide>
-                        ))
-                    } 
-                </Swiper>
+                {
+                    isLoading ? (
+                        <div className='flex gap-3 items-center mt-[12px]'>
+                            <div className='w-[80px] h-[30px] bg-slate-100 rounded-md'></div>
+                            <div className='w-[80px] h-[30px] bg-slate-100 rounded-md'></div>
+                            <div className='w-[80px] h-[30px] bg-slate-100 rounded-md'></div>
+                        </div>
+                    ) : (<Swiper
+                        slidesPerView="auto"
+                        spaceBetween={10}
+                        freeMode={true}
+                        modules={[FreeMode, Pagination]}
+                        className="mySwiper"
+                    >
+                        {
+                            alltags.map((tag, index) => (
+                                <SwiperSlide key={tag._id}
+                                    className={`${tagsSelected[index] ? "bg-purple-600 text-white" : "bg-white text-gray-400"} p-1 rounded-md w-20`}
+                                    onClick={() => handletagClick(index)} >
+                                    {tag.name}
+                                </SwiperSlide>
+                            ))
+                        }
+                    </Swiper>)
+                }
             </div>
             <button className='bg-purple-600 p-1 rounded-md px-3 flex gap-1 items-center text-white cursor-pointer'
-            onClick={()=> setOpenNewTagsWindow(true)}>
-                <AddOutlinedIcon sx={{fontSize: 18}} />
+                onClick={() => setOpenNewTagsWindow(true)}>
+                <AddOutlinedIcon sx={{ fontSize: 18 }} />
                 <span>Tag</span>
             </button>
 
-        </div>
+        </div >
     );
 }

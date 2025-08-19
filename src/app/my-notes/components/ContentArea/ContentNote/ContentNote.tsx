@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useGlobalContext } from "../../../../../../ContextApi"
 import { SingleCodeLanguageType, singleNoteType, SingleTagType } from "@/app/Types";
 import TitleOutlinedIcon from '@mui/icons-material/TitleOutlined';
@@ -19,6 +19,48 @@ import "ace-builds/src-noconflict/theme-tomorrow";
 import { IconButton } from "@mui/material";
 import SearchIcon from '@mui/icons-material/Search';
 import { allLanguages } from "@/app/localData/Languages";
+import { debounce } from "lodash";
+
+const addNoteInDB = async (note: singleNoteType, isNew: boolean,
+    setAllNotes: React.Dispatch<React.SetStateAction<singleNoteType[]>>, setSingleNote: React.Dispatch<React.SetStateAction<singleNoteType | undefined>>, setIsNewNote: React.Dispatch<React.SetStateAction<boolean>>) => {
+
+    const url = isNew ? "/api/snippets" : `/api/snippets?snippetId=${note._id}`;
+    const method = isNew ? "POST" : "PUT";
+    const { _id, ...noteData } = note;
+    const body = isNew ? JSON.stringify(noteData) : JSON.stringify(note);
+
+
+    try {
+        const response = await fetch(`/api/snippets`, {
+            method: method,
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: body,
+        });
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        const savedNote = isNew ? { ...note, _id: data.notes._id } : note;
+
+        setAllNotes((prevNotes) => {
+            const updatedNotes = isNew ? [...prevNotes, savedNote] : prevNotes.map((n) => (n._id === savedNote._id ? savedNote : n));
+
+            return updatedNotes.sort((a, b) => new Date(b.creationDate).getTime() - new Date(a.creationDate).getTime());
+        });
+
+        if (isNew) {
+            setSingleNote(savedNote);
+            setIsNewNote(false);
+        }
+    } catch (error) {
+        console.log(error);
+    }
+}
+
 
 function ContentNote() {
 
@@ -35,20 +77,14 @@ function ContentNote() {
     }, [openContentNote, selectedNote])
     // If it's a new note, add it immediately
     useEffect(() => {
-        if (isNewNote) {
-            if (singleNote && singleNote.title !== "") {
-                const updateAllNotes = ([...allNotes, singleNote])
-                // sort all notes by date
-                const sortedAllNotes = updateAllNotes.sort((a, b) => {
-                    return (
-                        new Date(b.creationDate).getTime() - new Date(a.creationDate).getTime()
-                    )
-                });
-                setAllNotes(sortedAllNotes);
-                setIsNewNote(false);
-            }
+        if (singleNote && singleNote.title !== "") {
+            debouncedSaveNote(singleNote, isNewNote);
         }
-    }, [singleNote])
+    }, [singleNote]);
+
+    const debouncedSaveNote = useMemo(() => debounce((note: singleNoteType, isNew: boolean) => {
+        addNoteInDB(note, isNew, setAllNotes, setSingleNote, setIsNewNote);
+    }, 500), []);
 
     useEffect(() => {
         console.log("Dark mode updated:", darkMode);
@@ -101,18 +137,6 @@ function ContentNoteHeader({ singleNote, setSingleNote }: { singleNote: singleNo
     function onUpdateTitle(e: React.ChangeEvent<HTMLTextAreaElement>) {
         const newSingleNote = { ...singleNote, title: e.target.value };
         setSingleNote(newSingleNote);
-
-        const exists = allNotes.some((note) => note._id === singleNote._id);
-        if (!exists && newSingleNote.title.trim() !== "") {
-            setAllNotes([...allNotes, newSingleNote]);
-            setIsNewNote(false); // ek hi baar add karna hai
-        } else {
-            // warna normal update
-            const newAllNotes = allNotes.map((note) =>
-                note._id === singleNote._id ? newSingleNote : note
-            );
-            setAllNotes(newAllNotes);
-        }
     }
 
     function handleKeyDown(event: React.KeyboardEvent<HTMLTextAreaElement>) {
@@ -280,16 +304,6 @@ function Description({ singleNote, setSingleNote }: { singleNote: singleNoteType
         if (!singleNote) return;
         const newSingleNote = { ...singleNote, description: event.target.value };
         setSingleNote(newSingleNote);
-
-        const newAllNotes = allNotes.map((note) => {
-            if (note._id === singleNote._id) {
-                return newSingleNote;
-            }
-
-            return note;
-        })
-
-        setAllNotes(newAllNotes);
     }
 
 

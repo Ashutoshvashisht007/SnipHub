@@ -11,12 +11,13 @@ const EmptyPlaceHolder = ({
     isNew?: boolean
 }) => {
 
-    const {openContentNoteObject: {setOpenContentNote}, selectedNoteObject: {setSelectedNote}, isNewNoteObject: {isNewNote, setIsNewNote}} = useGlobalContext();
+    const {openContentNoteObject: {setOpenContentNote}, selectedNoteObject: {setSelectedNote}, isNewNoteObject: {isNewNote, setIsNewNote}, shareUserIdObject: {shareUserId} } = useGlobalContext();
     
         const openTheContentNote = () => {
             const newSingleNote = {
                 _id: uuidv4(),
                 title: "",
+                clerkUserId: shareUserId || "",
                 creationDate: new Date().toISOString(),
                 tags: [],
                 description: "",

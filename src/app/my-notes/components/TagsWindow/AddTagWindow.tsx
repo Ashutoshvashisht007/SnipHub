@@ -25,7 +25,7 @@ const tagSuggestions = [
 
 const AddTagWindow = () => {
 
-    const { openNewTagsWindowObject: { openNewTagsWindow, setOpenNewTagsWindow }, darkModeObject: { darkMode }, allTagsObject: { alltags, setAllTags }, selectedTagToEditObject: { selectedTagToEdit, setSelectedTagToEdit }, allNotesObject: { allNotes, setAllNotes } } = useGlobalContext();
+    const { openNewTagsWindowObject: { openNewTagsWindow, setOpenNewTagsWindow }, darkModeObject: { darkMode }, allTagsObject: { alltags, setAllTags }, selectedTagToEditObject: { selectedTagToEdit, setSelectedTagToEdit }, allNotesObject: { allNotes, setAllNotes }, shareUserIdObject: {shareUserId} } = useGlobalContext();
 
     const [tagName, setTagName] = useState("");
     const [errorMessage, setErrorMessage] = useState("");
@@ -57,7 +57,7 @@ const AddTagWindow = () => {
 
         if (!alltags.some((tag) => tag.name === tagName)) {
             if (!selectedTagToEdit) {
-                addNewTagFunction(alltags, setAllTags, setOpenNewTagsWindow, tagName);
+                addNewTagFunction(alltags, setAllTags, setOpenNewTagsWindow, tagName, shareUserId);
             } else {
                 handleEditTag(alltags, setAllTags, setOpenNewTagsWindow, selectedTagToEdit, setSelectedTagToEdit, tagName, allNotes, setAllNotes);
             }
@@ -168,8 +168,8 @@ function ButtonGroup({ onSubmit }: {
     )
 }
 
-function addNewTagFunction(allTags: SingleTagType[], setAllTags: React.Dispatch<React.SetStateAction<SingleTagType[]>>, setOpenNewTagsWindow: React.Dispatch<React.SetStateAction<boolean>>, tagName: string) {
-    const newTag = { _id: uuidv4(), name: tagName };
+function addNewTagFunction(allTags: SingleTagType[], setAllTags: React.Dispatch<React.SetStateAction<SingleTagType[]>>, setOpenNewTagsWindow: React.Dispatch<React.SetStateAction<boolean>>, tagName: string, shareUserId: string) {
+    const newTag = { _id: uuidv4(), name: tagName, clerkUserId: shareUserId };
     try {
         setAllTags([...allTags, newTag]);
         setOpenNewTagsWindow(false);
