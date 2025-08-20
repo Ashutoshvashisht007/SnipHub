@@ -32,3 +32,27 @@ export async function GET(req: any){
         return NextResponse.json({error: error}, {status: 400})
     }
 }
+
+export async function PUT(req: Request) {
+  try {
+    const { id, title, isFavorite, clerkUserId, tags, description, code, language, creationDate, isTrash } = await req.json();
+
+    await connect();
+
+    // snippet ko update karo
+    const updatedNote = await SingleSnippet.findByIdAndUpdate(
+      id,
+      { title, isFavorite, clerkUserId, tags, description, code, language, creationDate, isTrash },
+      { new: true } // updated document return karega
+    );
+
+    if (!updatedNote) {
+      return NextResponse.json({ error: "Snippet not found" }, { status: 404 });
+    }
+
+    return NextResponse.json({ note: updatedNote });
+  } catch (error) {
+    console.log(error);
+    return NextResponse.json({ error: error }, { status: 400 });
+  }
+}

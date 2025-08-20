@@ -24,16 +24,16 @@ import { debounce } from "lodash";
 const addNoteInDB = async (note: singleNoteType, isNew: boolean,
     setAllNotes: React.Dispatch<React.SetStateAction<singleNoteType[]>>, setSingleNote: React.Dispatch<React.SetStateAction<singleNoteType | undefined>>, setIsNewNote: React.Dispatch<React.SetStateAction<boolean>>) => {
 
-    const url = isNew ? "/api/snippets" : `/api/snippets?snippetId=${note._id}`;
+    const url = isNew ? "/api/snippets" : `/api/snippets/${note._id}`;
     const method = isNew ? "POST" : "PUT";
     const { _id, ...noteData } = note;
     const body = isNew ? JSON.stringify(noteData) : JSON.stringify(note);
 
 
     try {
-        const response = await fetch(`/api/snippets`, {
+        const response = await fetch(url, {
             method: method,
-            headers: {
+            headers: {  
                 "Content-Type": "application/json",
             },
             body: body,

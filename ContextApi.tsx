@@ -290,8 +290,36 @@ export default function GlobalContextProvider({
             }
         }
 
+        const fetchAllTags = async ()=> {
+            try {
+                const response = await fetch(`/api/tags?clerkId=${user?.id}`);
+
+                if(!response.ok){
+                    throw new Error("Failed to fetch tags");
+                }
+
+                const data: {tags: SingleTagType[]} = await response.json();
+                if(data.tags){
+                    const allTag: SingleTagType = {
+                        _id: uuidv4(),
+                        name: "All",
+                        clerkUserId: user?.id || "",
+                    };
+
+                    const tempAllTags = [allTag, ...data.tags];
+
+                    setAllTags(tempAllTags);
+                }
+            } catch (error) {
+                console.log(error);
+            } finally{
+                setIsLoading(false);
+            }
+        }
+
         if(isLoaded && isSignedIn){
             fetchAllNotes();
+            fetchAllTags();
         }
 
     }, [user, isLoaded, isSignedIn])

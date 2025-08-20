@@ -168,14 +168,39 @@ function ButtonGroup({ onSubmit }: {
     )
 }
 
-function addNewTagFunction(allTags: SingleTagType[], setAllTags: React.Dispatch<React.SetStateAction<SingleTagType[]>>, setOpenNewTagsWindow: React.Dispatch<React.SetStateAction<boolean>>, tagName: string, shareUserId: string) {
-    const newTag = { _id: uuidv4(), name: tagName, clerkUserId: shareUserId };
+async function addNewTagFunction(allTags: SingleTagType[], setAllTags: React.Dispatch<React.SetStateAction<SingleTagType[]>>, setOpenNewTagsWindow: React.Dispatch<React.SetStateAction<boolean>>, tagName: string, shareUserId: string) {
+    const newTag = { name: tagName, clerkUserId: shareUserId };
     try {
-        setAllTags([...allTags, newTag]);
+        const response = await fetch("/api/tags",{
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify(newTag),
+        });
+
+        if(!response.ok){
+            throw new Error("Failed to add tag");
+        }
+
+        const data = await response.json();
+
+        if(data.error){
+            throw new Error(data.error);
+        }
+
+        const addedTag: SingleTagType = {
+            _id: data.tags._id,
+            name: data.tags.name,
+            clerkUserId: data.tags.clerkUserId,
+        }
+
+        setAllTags((prevTags) => [...prevTags,addedTag]);
         setOpenNewTagsWindow(false);
         toast.success("Tag has been added successfully");
     } catch (error) {
         console.log(error);
+        toast.error(error instanceof Error ? error.message : "Failed to add tag");
     }
 }
 

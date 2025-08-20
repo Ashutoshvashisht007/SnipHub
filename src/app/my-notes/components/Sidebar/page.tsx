@@ -5,6 +5,7 @@ import DataObjectIcon from "@mui/icons-material/DataObject";
 import { useGlobalContext } from "../../../../../ContextApi";
 import getLanguageToIcon from "@/app/utils/LanguageTextToIcon";
 import { captilizeFirstOccurence } from "@/app/utils/Utils";
+import { useClerk } from "@clerk/nextjs";
 
 export default function Sidebar() {
 
@@ -38,7 +39,8 @@ function QuickLinks() {
 
     const { sideBarMenuObject: { sideBarMenu, setSideBarMenu }, tagsAndLogoutMenuObject: {tagsAndLogoutMenu, setTagsAndLogoutMenu},
 openTagsWindowObject: {openTagsWindow, setOpenTagsWindow} } = useGlobalContext();
-    console.log(sideBarMenu);
+    
+    const { signOut } = useClerk(); 
 
     function clickedMenu(index: number) {
         const updatedSideBarMenu = sideBarMenu.map((menu, i) => {
@@ -56,6 +58,10 @@ openTagsWindowObject: {openTagsWindow, setOpenTagsWindow} } = useGlobalContext()
     function clickedTagsorLogout(index: number){
         const updatedTagsAndLogout = tagsAndLogoutMenu.map((menu, i) => {
             if (i === index) {
+                if(menu.name === "Log Out"){  
+                    signOut(); 
+                    return { ...menu, isSelected: false };
+                }
                 if(menu.isSelected === true){
                     setOpenTagsWindow(false);
                     return {...menu, isSelected: false}

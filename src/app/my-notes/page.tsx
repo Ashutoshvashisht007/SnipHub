@@ -8,7 +8,7 @@ import ConfirmationWindow from '../utils/ConfirmationWindow'
 import AddTagWindow from './components/TagsWindow/AddTagWindow'
 
 
-export default function page(){
+export default function Page(){
 
     const {
         darkModeObject: {darkMode}, openConfirmationWindowObject: {openConfirmationWindow}, openNewTagsWindowObject: {openNewTagsWindow}

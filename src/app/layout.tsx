@@ -22,15 +22,17 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <ClerkWrapper>
-        <GlobalContextProvider>
-          <body
-            className={poppins.className}
-          >
+      <body
+        className={poppins.className}
+      >
+        <ClerkWrapper>
+          <GlobalContextProvider>
+
             {children}
-          </body>
-        </GlobalContextProvider>
-      </ClerkWrapper>
-    </html>
+
+          </GlobalContextProvider>
+        </ClerkWrapper>
+      </body>
+    </html >
   );
 }

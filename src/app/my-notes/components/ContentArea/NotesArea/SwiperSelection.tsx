@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 // Import Swiper React components
 import { Swiper, SwiperSlide } from 'swiper/react';
 import AddOutlinedIcon from '@mui/icons-material/AddOutlined';
@@ -45,7 +45,6 @@ export default function SwiperSelection() {
             return newTagClicked;
         });
     }, [tagsSelected])
-    // console.log(tagsClicked);
 
 
     useEffect(() => {

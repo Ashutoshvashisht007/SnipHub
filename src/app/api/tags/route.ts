@@ -1,0 +1,79 @@
+import connect from "@/app/lib/connect";
+import Tag from "@/app/Models/TagSchema";
+import { NextResponse } from "next/server";
+
+
+export async function POST(req: Request) {
+    try {
+        const { name, clerkUserId } = await req.json();
+
+        await connect();
+
+        const tag = new Tag({
+            name,
+            clerkUserId
+        });
+
+        const savedTag = await tag.save();
+        return NextResponse.json({
+            tags: savedTag
+        });
+
+    } catch (error: any) {
+        console.error("POST /api/tags error:", error.message, error.stack);
+        return NextResponse.json({ error: error.message }, { status: 500 });
+    }
+}
+
+export async function GET(req: any) {
+    console.log("GET /api/tags hit hua ✅");
+    try {
+        await connect();
+
+        const { searchParams } = new URL(req.url);
+        const clerkId = searchParams.get("clerkId");
+        console.log("GET /api/tags hit hua ✅");
+
+        if (!clerkId) {
+            return NextResponse.json(
+                { error: "clerkId is required" },
+                { status: 400 }
+            );
+        }
+
+        const tags = await Tag.find({ clerkUserId: clerkId });
+
+        return NextResponse.json({ tags }, { status: 200 });
+    } catch (error: any) {
+        console.error("GET /api/tags error:", error); // debug ke liye console me pura error
+        return NextResponse.json(
+            { error: error.message || "Internal Server Error" },
+            { status: 500 }
+        );
+    }
+}
+
+export async function DELETE(req: Request) {
+    try {
+        const url = new URL(req.url);
+        const tagId = url.searchParams.get("tagId");
+
+        if (!tagId) {
+            return NextResponse.json({ message: "tagId is required" }, { status: 400 });
+        }
+
+        const tagToDelete = await Tag.findOneAndDelete({ _id: tagId });
+
+        if (!tagToDelete) {
+            return NextResponse.json({ message: "tag deleted successfully" });
+        }
+    } catch (error) {
+        console.log("Failed to delte tag");
+        return NextResponse.json({
+            message: "Failed to deleted tag"
+        },
+            {
+                status: 500
+            })
+    }
+}

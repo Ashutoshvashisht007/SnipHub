@@ -1,18 +1,43 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { useGlobalContext } from '../../../ContextApi'
 import toast from 'react-hot-toast';
 
 const ConfirmationWindow = () => {
 
-    const { openConfirmationWindowObject: { openConfirmationWindow, setOpenConfirmationWindow }, allNotesObject: {allNotes, setAllNotes}, selectedNoteObject: {selectedNote, setSelectedNote} } = useGlobalContext();
+    const { openConfirmationWindowObject: { openConfirmationWindow, setOpenConfirmationWindow }, allNotesObject: { allNotes, setAllNotes }, selectedNoteObject: { selectedNote, setSelectedNote } } = useGlobalContext();
 
-    const deleteTheSnippet = () => {
-        if(selectedNote){
-            setAllNotes((prevNotes)=> prevNotes.filter((note)=> note._id !== selectedNote._id));
-            setOpenConfirmationWindow(false);
-            setSelectedNote(null);
+    const [isDeleting, setIsDeleting] = useState(false);
 
-            toast.success("Snippet has been deleted");
+    const deleteTheSnippet = async () => {
+        if (selectedNote) {
+            setIsDeleting(true);
+
+            try {
+                const res = await fetch(`/api/snippets/${selectedNote._id}`, {
+                    method: "DELETE",
+                    headers: {
+                        "Content-Type": "application/json",
+                    }
+                });
+
+                if (!res.ok) {
+                    throw new Error(`HTTP error! status: ${res.status}`);
+                }
+
+                setAllNotes((prevNotes) => prevNotes.filter((note) => note._id !== selectedNote._id));
+                setOpenConfirmationWindow(false);
+                setSelectedNote(null);
+
+                toast.success("Snippet has been deleted");
+            } catch (error) {
+                console.log("Error whilte deleting the snippet,", error); 
+                toast.error("Failed to delete the snippet, please try again later");
+            }
+            finally{
+                setIsDeleting(false);
+            }
+
+
         }
     }
 
@@ -28,56 +53,10 @@ const ConfirmationWindow = () => {
             <div className='flex gap-2 mt-5'>
                 <button onClick={() => setOpenConfirmationWindow(false)} className='text-[12px] cursor-pointer w-full px-10 p-3 rounded-md bg-green-300 hover:bg-green-400'>Cancel</button>
                 <button className={`w-full px-10 text-[12px] p-3 text-white bg-red-400 rounded-md cursor-pointer hover:bg-red-500`}
-                onClick={deleteTheSnippet}>Delete</button>
+                    onClick={deleteTheSnippet}>{isDeleting ? "Deleting...." : "Delete"}</button>
             </div>
         </div>
     )
 }
 
 export default ConfirmationWindow
-
-// OLD LOGIC
-
-// const { allNotesObject: { allNotes }, sideBarMenuObject: { sideBarMenu }, openContentNoteObject: {openContentNote, setOpenContentNote} } = useGlobalContext();
-
-    // const filterIsTrahsedNotes = allNotes.filter((note) => note.isTrash === false);
-
-    // const [filteredNotes, setFilteredNotes] = useState(allNotes.filter((note) => note.isTrash === false));
-
-    // useEffect(() => {
-    //     if (sideBarMenu[0].isSelected) {
-    //         setFilteredNotes(allNotes.filter((note) => !note.isTrash))
-    //     }
-
-    //     if (sideBarMenu[1].isSelected) {
-    //         setFilteredNotes(allNotes.filter((note) => note.isFavorite && !note.isTrash));
-    //     }
-    // }, [allNotes]);
-
-    // useEffect(() => {
-    //     if(openContentNote){
-    //         setOpenContentNote(false);
-    //     }
-    //     if (sideBarMenu[0].isSelected) {
-    //         setFilteredNotes(filterIsTrahsedNotes)
-    //     }
-    //     if (sideBarMenu[1].isSelected) {
-    //         const filteredFavoriteNotes = allNotes.filter((note) => !note.isTrash && note.isFavorite);
-    //         setFilteredNotes(filteredFavoriteNotes);
-    //     }
-    //     if (sideBarMenu[2].isSelected) {
-    //         const filteredTrashedNotes = allNotes.filter((note) => note.isTrash);
-    //         setFilteredNotes(filteredTrashedNotes);
-    //     }
-    // }, [sideBarMenu])
-
-// CONTENT NOTE inside noteHeader
-
-// const newAllNotes = allNotes.map((note) => {
-        //     if (note._id === singleNote._id) {
-        //         return newSingleNote;
-        //     }
-        //     return note;
-        // });
-
-        // setAllNotes(newAllNotes);

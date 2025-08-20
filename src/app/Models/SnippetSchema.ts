@@ -24,36 +24,30 @@ const SingleSnippetSchema = new Schema({
     },
     isFavorite: {
         type: Boolean,
-        required: true,
         default: false
     },
     isTrash: {
         type: Boolean,
-        required: true,
         default: false
     },
     tags: {
         type: [SingleTagSchema],
-        required: true,
-        default: [],
+        default: ["All"],
     },
     description: {
         type: String,
-        required: true,
+        default: ""
     },
     code: {
         type: String,
-        required: true,
         default: ""
     },
     language: {
         type: String,
-        required: true,
         default: ""
     },
     creationDate: {
         type: String,
-        required: true,
         default: "",
     }
 }, { timestamps: true });

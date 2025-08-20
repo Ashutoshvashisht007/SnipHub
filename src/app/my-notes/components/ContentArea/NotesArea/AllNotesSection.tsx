@@ -170,12 +170,12 @@ function NoteHeader({ title, isFavirote, _id, isTrashed }: { title: string, isFa
         const newFav = !currentFav;
 
         try {
-            const response = await fetch(`/api/snippets?snippetId=${_id}`, {
+            const response = await fetch(`/api/snippets/${_id}`, {
                 method: "PUT",
                 headers: {
                     "Content-Type": "application/json",
                 },
-                body: JSON.stringify({ isFavorite: isFavirote })
+                body: JSON.stringify({ isFavorite: newFav })
             })
 
             if (!response.ok) {
@@ -291,7 +291,7 @@ function NoteFooter({ footer, note }: { footer: string, note: singleNoteType }) 
         ));
 
         try {
-            const response = await fetch(`/api/snippets?snippetId=${note._id}`, {
+            const response = await fetch(`/api/snippets/${note._id}`, {
                 method: "PUT",
                 headers: {
                     "Content-Type": "application/json",
@@ -314,7 +314,7 @@ function NoteFooter({ footer, note }: { footer: string, note: singleNoteType }) 
 
     const resetNoteFunction = async (noteId: string) => {
         try {
-            const response = await fetch(`/api/snippets?snippetId=${noteId}`, {
+            const response = await fetch(`/api/snippets/${noteId}`, {
                 method: "PUT",
                 headers: {
                     "Content-Type": "application/json",
