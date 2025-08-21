@@ -1,11 +1,12 @@
 import connect from "@/app/lib/connect";
 import SingleSnippet from "@/app/Models/SnippetSchema";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
 export async function PUT(
-  req: Request,
-  { params }: { params: { snippetId: string } }
+  req: NextRequest,
+  context: { params: { snippetId: string } }
 ) {
+  const { params } = context;
   try {
     const body = await req.json();
 
@@ -30,9 +31,10 @@ export async function PUT(
 
 
 export async function DELETE(
-  request: Request,
-  { params }: { params: { snippetId: string } }
+  request: NextRequest,
+  context: { params: { snippetId: string } }
 ) {
+  const { params } = context;
   try {
     await connect();
 
