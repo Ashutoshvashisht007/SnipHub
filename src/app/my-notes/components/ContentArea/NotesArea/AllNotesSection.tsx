@@ -83,7 +83,7 @@ const AllNotesSection = () => {
                                         muiIcon={<TextSnippetOutlinedIcon sx={{ fontSize: 140 }} />}
                                         text={
                                             <span className="text-slate-400 text-lg text-center">
-                                                It looks like there's no snippets <br /> with these tags
+                                                It looks like there&apos;s no snippets <br /> with these tags
                                             </span>
                                         }
                                         isNew={true}
@@ -93,7 +93,7 @@ const AllNotesSection = () => {
                                         muiIcon={<TextSnippetOutlinedIcon sx={{ fontSize: 140 }} />}
                                         text={
                                             <span className="text-slate-400 text-lg text-center">
-                                                It looks like there's no snippets right now
+                                                It looks like there&apos;s no snippets right now
                                             </span>
                                         }
                                         isNew={true}
@@ -108,7 +108,7 @@ const AllNotesSection = () => {
                             muiIcon={<FavoriteBorderOutlinedIcon sx={{ fontSize: 140 }} />}
                             text={
                                 <span className="text-slate-400 text-lg text-center">
-                                    It looks like there's no snippets right now
+                                    It looks like there&apos;s no snippets right now
                                 </span>
                             }
                         />
@@ -119,7 +119,7 @@ const AllNotesSection = () => {
                             muiIcon={<DeleteOutlineOutlined sx={{ fontSize: 140 }} />}
                             text={
                                 <span className="text-slate-400 text-lg text-center">
-                                    It looks like there's no snippets right now
+                                    It looks like there&apos;s no snippets right now
                                 </span>
                             }
                         />

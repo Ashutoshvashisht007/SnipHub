@@ -75,7 +75,6 @@ function ContentNote() {
             }
         }
     }, [openContentNote, selectedNote])
-    // If it's a new note, add it immediately
     useEffect(() => {
         if (singleNote && singleNote.title !== "") {
             debouncedSaveNote(singleNote, isNewNote);

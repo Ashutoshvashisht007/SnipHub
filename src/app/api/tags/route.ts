@@ -19,13 +19,18 @@ export async function POST(req: Request) {
             tags: savedTag
         });
 
-    } catch (error: any) {
-        console.error("POST /api/tags error:", error.message, error.stack);
-        return NextResponse.json({ error: error.message }, { status: 500 });
+    } catch (error: unknown) {
+        if (error instanceof Error) {
+            console.error("POST /api/tags error:", error.message, error.stack);
+            return NextResponse.json({ error: error.message }, { status: 500 });
+        } else {
+            console.error("POST /api/tags unknown error:", error);
+            return NextResponse.json({ error: "Something went wrong" }, { status: 500 });
+        }
     }
 }
 
-export async function GET(req: any) {
+export async function GET(req: Request) {
     console.log("GET /api/tags hit hua ✅");
     try {
         await connect();
@@ -44,17 +49,20 @@ export async function GET(req: any) {
         const tags = await Tag.find({ clerkUserId: clerkId });
 
         return NextResponse.json({ tags }, { status: 200 });
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error("GET /api/tags error:", error); // debug ke liye console me pura error
-        return NextResponse.json(
-            { error: error.message || "Internal Server Error" },
-            { status: 500 }
-        );
+        if (error instanceof Error) {
+            return NextResponse.json(
+                { error: error.message || "Internal Server Error" },
+                { status: 500 }
+            );
+        }
     }
 }
 
 export async function DELETE(req: Request) {
     try {
+        await connect()
         const url = new URL(req.url);
         const tagId = url.searchParams.get("tagId");
 
@@ -65,8 +73,9 @@ export async function DELETE(req: Request) {
         const tagToDelete = await Tag.findOneAndDelete({ _id: tagId });
 
         if (!tagToDelete) {
-            return NextResponse.json({ message: "tag deleted successfully" });
+            return NextResponse.json({ message: "Tag not found" }, { status: 404 });
         }
+        return NextResponse.json({ message: "Tag deleted successfully" }, { status: 200 });
     } catch (error) {
         console.log("Failed to delte tag");
         return NextResponse.json({

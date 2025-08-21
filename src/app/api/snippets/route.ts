@@ -1,6 +1,6 @@
 import connect from "@/app/lib/connect";
 import SingleSnippet from "@/app/Models/SnippetSchema";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
 
 export async function POST(req: Request){
@@ -22,9 +22,15 @@ export async function POST(req: Request){
     }
 }
 
-export async function GET(req: any){
+export async function GET(req: NextRequest){
     try {
         const clerkId = req.nextUrl.searchParams.get("clerkId");
+        if (!clerkId) {
+            return NextResponse.json(
+                { error: "clerkId is required" },
+                { status: 400 }
+            );
+        }
         await connect();
         const notes = await SingleSnippet.find({clerkUserId: clerkId});
         return NextResponse.json({notes: notes});
