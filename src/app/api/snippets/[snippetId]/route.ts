@@ -4,16 +4,15 @@ import { NextResponse } from "next/server";
 
 export async function PUT(
   req: Request,
-  context: { params: Promise<{ snippetId: string }> }
+  { params }: { params: { snippetId: string } }
 ) {
   try {
-    const { snippetId } = await context.params;
     const body = await req.json();
 
     await connect();
 
     const updatedNote = await SingleSnippet.findByIdAndUpdate(
-      snippetId,
+      params.snippetId,
       body,
       { new: true }
     );
