@@ -4,7 +4,6 @@ import React, { createContext, useContext, useEffect, useState } from "react";
 import BorderAllIcon from "@mui/icons-material/BorderAll";
 import FavoriteBorderIcon from "@mui/icons-material/FavoriteBorder";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
-import LogoutIcon from "@mui/icons-material/Logout";
 import LightModeIcon from "@mui/icons-material/LightMode";
 import DarkModeIcon from "@mui/icons-material/DarkMode";
 import { CodeLanguagesCounterType, DarkModeType, SidebarMenu, SingleCodeLanguageType, singleNoteType, SingleTagType } from "@/app/Types";

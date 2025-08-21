@@ -4,7 +4,7 @@ import toast from 'react-hot-toast';
 
 const ConfirmationWindow = () => {
 
-    const { openConfirmationWindowObject: { openConfirmationWindow, setOpenConfirmationWindow }, allNotesObject: { allNotes, setAllNotes }, selectedNoteObject: { selectedNote, setSelectedNote } } = useGlobalContext();
+    const { openConfirmationWindowObject: { openConfirmationWindow, setOpenConfirmationWindow }, allNotesObject: { setAllNotes }, selectedNoteObject: { selectedNote, setSelectedNote } } = useGlobalContext();
 
     const [isDeleting, setIsDeleting] = useState(false);
 

@@ -77,3 +77,36 @@ export async function DELETE(req: Request) {
             })
     }
 }
+
+export async function PUT(req: Request) {
+    try {
+        const url = new URL(req.url);
+        const tagId = url.searchParams.get("tagId");
+
+        if (!tagId) {
+            return NextResponse.json({ message: "tagId is required" }, { status: 400 });
+        }
+
+        const { name } = await req.json();
+
+        await connect();
+
+        const updatedTag = await Tag.findByIdAndUpdate(
+            tagId,
+            { name },
+            { new: true }
+        );
+
+        if (!updatedTag) {
+            return NextResponse.json({ message: "Tag not found" }, { status: 404 });
+        }
+
+        return NextResponse.json({ tag: updatedTag });
+    } catch (error) {
+        console.error("Failed to update tag:", error);
+        return NextResponse.json(
+            { message: "Failed to update tag" },
+            { status: 500 }
+        );
+    }
+}

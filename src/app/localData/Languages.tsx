@@ -1,5 +1,5 @@
 import React from 'react'
-import { SiC, SiCplusplus, SiCss3, SiDart, SiFlutter, SiGo, SiHtml5, SiJavascript, SiKotlin, SiPerl, SiPhp, SiPython, SiR, SiRuby, SiRust, SiScala, SiShell, SiSwift, SiTypescript } from 'react-icons/si';
+import { SiC, SiCplusplus, SiCss3, SiDart, SiGo, SiHtml5, SiJavascript, SiKotlin, SiPerl, SiPhp, SiPython, SiR, SiRuby, SiRust, SiScala, SiSwift, SiTypescript } from 'react-icons/si';
 import { FaJava } from "react-icons/fa";
 
 import { v4 as uuidv4 } from "uuid";

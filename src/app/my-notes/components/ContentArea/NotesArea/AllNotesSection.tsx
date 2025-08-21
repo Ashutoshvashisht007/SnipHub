@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useEffect, useState } from 'react'
+import React from 'react'
 import { useGlobalContext } from '../../../../../../ContextApi'
 import FavoriteBorderOutlinedIcon from '@mui/icons-material/FavoriteBorderOutlined';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
@@ -19,7 +19,6 @@ import EmptyPlaceHolder from '@/app/utils/EmptyPlaceHolder';
 import TextSnippetOutlinedIcon from '@mui/icons-material/TextSnippetOutlined';
 import { DeleteOutlineOutlined } from '@mui/icons-material';
 import TagsWindow from '../../TagsWindow/TagsWindow';
-import { FaBullseye } from 'react-icons/fa';
 
 const AllNotesSection = () => {
 
@@ -27,8 +26,8 @@ const AllNotesSection = () => {
         allNotesObject: { allNotes },
         sideBarMenuObject: { sideBarMenu },
         tagsAndLogoutMenuObject: { tagsAndLogoutMenu },
-        tagsClickedObject: { tagsClicked, setTagsClicked },
-        isLoadingObject: { isLoading, setIsLoading }
+        tagsClickedObject: { tagsClicked },
+        isLoadingObject: { isLoading }
     } = useGlobalContext();
 
     let filteredNotes: singleNoteType[] = [];
@@ -154,7 +153,7 @@ function SingleNote({ note }: { note: singleNoteType }) {
 
 function NoteHeader({ title, isFavirote, _id, isTrashed }: { title: string, isFavirote: boolean, _id: string, isTrashed: boolean }) {
 
-    const { openContentNoteObject: { setOpenContentNote }, allNotesObject: { allNotes, setAllNotes }, selectedNoteObject: { selectedNote, setSelectedNote } } = useGlobalContext();
+    const { openContentNoteObject: { setOpenContentNote }, allNotesObject: { allNotes, setAllNotes }, selectedNoteObject: { setSelectedNote } } = useGlobalContext();
 
     const handleClick = (e: React.MouseEvent<HTMLSpanElement, MouseEvent>) => {
         e.preventDefault();
@@ -265,7 +264,7 @@ const CodeBlock: React.FC<CodeBlockProps> = ({ language, code }) => {
 
 function NoteFooter({ footer, note }: { footer: string, note: singleNoteType }) {
 
-    const { allNotesObject: { allNotes, setAllNotes }, openConfirmationWindowObject: { setOpenConfirmationWindow }, selectedNoteObject: { setSelectedNote } } = useGlobalContext();
+    const { allNotesObject: { setAllNotes }, openConfirmationWindowObject: { setOpenConfirmationWindow }, selectedNoteObject: { setSelectedNote } } = useGlobalContext();
 
 
     const handleTrash = async () => {

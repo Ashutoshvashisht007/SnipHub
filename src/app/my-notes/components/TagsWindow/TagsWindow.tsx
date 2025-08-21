@@ -10,12 +10,12 @@ import toast from 'react-hot-toast';
 import EmptyPlaceHolder from '@/app/utils/EmptyPlaceHolder';
 
 const TagsWindow = () => {
-    const { openTagsWindowObject: { openTagsWindow }, } = useGlobalContext();
+    const { openTagsWindowObject: { openTagsWindow }, darkModeObject: {darkMode} } = useGlobalContext();
     const [searchQuery, setSearchQuery] = useState("");
     return (
         <div
             style={{ left: "0", right: "0", marginLeft: "auto", marginRight: "auto", top: "40%", transform: "translateY(-50%)" }}
-            className={`${openTagsWindow ? "fixed" : "hidden"} border m-20 w-1/2 z-50 p-4 bg-white shadow-md rounded-md`}
+            className={`${openTagsWindow ? "fixed" : "hidden"} border m-20 w-1/2 z-50 p-4 ${darkMode[1].isSelected ? "bg-slate-400" : "bg-white"} shadow-md rounded-md`}
         >
             <Header />
             <SearchBar searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
@@ -28,7 +28,7 @@ export default TagsWindow
 
 function Header() {
 
-    const { tagsAndLogoutMenuObject: { tagsAndLogoutMenu, setTagsAndLogoutMenu } } = useGlobalContext();
+    const { tagsAndLogoutMenuObject: { tagsAndLogoutMenu, setTagsAndLogoutMenu }, darkModeObject: {darkMode} } = useGlobalContext();
 
     function handleClick() {
         const updatedTagsAndLogout = tagsAndLogoutMenu.map((menu, i) => {
@@ -46,12 +46,12 @@ function Header() {
     return (
         <div className='flex justify-between items-center'>
             <div className='flex items-center gap-2'>
-                <StyleOutlinedIcon />
-                <span className='text-md font-bold'>Tags</span>
+                <StyleOutlinedIcon className={`${darkMode[1].isSelected ? "text-white" : "text-black"}`}/>
+                <span className={`${darkMode[1].isSelected ? "text-white" : "text-black"} text-md font-bold`}>Tags</span>
             </div>
             <div onClick={handleClick}>
                 <CloseIcon sx={{ fontSize: 16 }}
-                    className='text-slate-400 cursor-pointer' />
+                    className={`${darkMode[1].isSelected ? "text-white" : "text-slate-400"} cursor-pointer`} />
             </div>
         </div>
     )
@@ -135,7 +135,7 @@ function TagList({ searchQuery }: { searchQuery: string }) {
 
 function SingleTag({ tag }: { tag: SingleTagType }) {
 
-    const { darkModeObject: { darkMode }, selectedTagToEditObject: { selectedTagToEdit, setSelectedTagToEdit }, openNewTagsWindowObject: { setOpenNewTagsWindow }, allTagsObject: { alltags, setAllTags }, allNotesObject: { allNotes, setAllNotes }, tagsClickedObject: {tagsClicked, setTagsClicked} } = useGlobalContext();
+    const { darkModeObject: { darkMode }, selectedTagToEditObject: { setSelectedTagToEdit }, openNewTagsWindowObject: { setOpenNewTagsWindow }, allTagsObject: { alltags, setAllTags }, allNotesObject: { allNotes, setAllNotes }, tagsClickedObject: {tagsClicked, setTagsClicked} } = useGlobalContext();
 
     const openTagWindow = (tag: SingleTagType) => {
         setOpenNewTagsWindow(true);
@@ -158,7 +158,7 @@ function SingleTag({ tag }: { tag: SingleTagType }) {
                 <DragIndicatorOutlined className='text-slate-400 cursor-pointer' />
                 <div className='w-2 h-2 bg-purple-600 rounded-full'></div>
                 <div className='flex flex-col'>
-                    <span className='font-bold'>{tag.name}</span>
+                    <span className={`${darkMode[1].isSelected ? "text-white" : "text-black"} font-bold`}>{tag.name}</span>
                     <span className='text-slate-400 text-[12px]'>{countTags(tag)} Snippets</span>
                 </div>
             </div>
@@ -178,20 +178,69 @@ function SingleTag({ tag }: { tag: SingleTagType }) {
     )
 };
 
-function deleteTag(tag: SingleTagType, alltags: SingleTagType[], setAllTags: React.Dispatch<React.SetStateAction<SingleTagType[]>>, allNotes: singleNoteType[], setAllNotes: React.Dispatch<React.SetStateAction<singleNoteType[]>>, tagsClicked: string[], setTagsClicked: React.Dispatch<React.SetStateAction<string[]>>) {
+async function updateNote(note: singleNoteType, tagToRemove: string){
+    const updatedTags = note.tags.filter((t) => t.name.toLowerCase() !== tagToRemove.toLowerCase());
+
+    const updateNoteResponse = await fetch(`api/snippets?snippetId=${note._id}`, {
+        method: "PUT",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+            ...note,
+            tags: updatedTags,
+        })
+    });
+
+    if(!updateNoteResponse.ok){
+        throw new Error(`Failed to update note ${note._id}`);
+    }
+
+    const updatedNote = await updateNoteResponse.json();
+    return updatedNote.note;
+}
+
+async function deleteTag(tag: SingleTagType, alltags: SingleTagType[], setAllTags: React.Dispatch<React.SetStateAction<SingleTagType[]>>, allNotes: singleNoteType[], setAllNotes: React.Dispatch<React.SetStateAction<singleNoteType[]>>, tagsClicked: string[], setTagsClicked: React.Dispatch<React.SetStateAction<string[]>>) {
 
     setTagsClicked(
         tagsClicked.filter((t) => t.toLocaleLowerCase() !== tag.name.toLocaleLowerCase())
     );
 
     try {
-        const tagNameLower = tag.name.toLocaleLowerCase();
-        setAllTags(alltags.filter(t => t.name.toLocaleLowerCase() !== tagNameLower));
 
-        setAllNotes(allNotes.map(note => ({
-            ...note,
-            tags: note.tags.filter(t => t.name.toLocaleLowerCase() !== tagNameLower)
-        })));
+        const deleteTagResponse = await fetch(`/api/tags?tagId=${tag._id}`, {
+            method: "DELETE",
+        });
+
+        if(!deleteTagResponse.ok){
+            const errorData = await deleteTagResponse.json();
+            throw new Error(errorData.message || "Failed to delete tag");
+        }
+
+        const notesToUpdate = allNotes.filter((note) => note.tags.some((t)=> t.name.toLowerCase() === tag.name.toLowerCase()));
+
+        const updatePromises = notesToUpdate.map((note) => updateNote(note,tag.name));
+
+        const updatedNotes = await Promise.all(updatePromises);
+
+        const updateAllTags = alltags.filter((t) => t.name.toLowerCase() !== tag.name.toLowerCase());
+
+        const updateAllNotes = allNotes.map((note)=> {
+            const updatedNote = updatedNotes.find((un) => un.id === note._id);
+
+            if(updatedNote){
+                return updatedNote;
+            }
+            return {
+                ...note,
+                tags: note.tags.filter((t)=> t.name.toLowerCase() !== tag.name.toLowerCase())
+            }
+        });
+
+        setAllTags(updateAllTags);
+        setAllNotes(updateAllNotes);
+
+        setTagsClicked(tagsClicked.filter((t) => t.toLowerCase() !== tag.name.toLowerCase()));
 
         toast.success("Tag has been deleted successfully");
     } catch (error) {

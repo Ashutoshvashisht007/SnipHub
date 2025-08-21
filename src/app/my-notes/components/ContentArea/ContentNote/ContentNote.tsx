@@ -64,7 +64,7 @@ const addNoteInDB = async (note: singleNoteType, isNew: boolean,
 
 function ContentNote() {
 
-    const { openContentNoteObject: { openContentNote }, isMobileObject: { isMobile }, selectedNoteObject: { selectedNote }, allNotesObject: { allNotes, setAllNotes }, isNewNoteObject: { isNewNote, setIsNewNote }, darkModeObject: { darkMode }, selectedLanguageObject: { selectedLanguage, setSelectedLanguage } } = useGlobalContext();
+    const { openContentNoteObject: { openContentNote }, isMobileObject: { isMobile }, selectedNoteObject: { selectedNote }, allNotesObject: { allNotes, setAllNotes }, isNewNoteObject: { isNewNote, setIsNewNote }, darkModeObject: { darkMode }, selectedLanguageObject: { selectedLanguage } } = useGlobalContext();
 
     const [singleNote, setSingleNote] = useState<singleNoteType | undefined>(undefined);
     // Whenever we open a note (new or existing), load it
@@ -130,7 +130,7 @@ export default ContentNote;
 
 function ContentNoteHeader({ singleNote, setSingleNote }: { singleNote: singleNoteType, setSingleNote: React.Dispatch<React.SetStateAction<singleNoteType | undefined>> }) {
 
-    const { allNotesObject: { allNotes, setAllNotes }, isNewNoteObject: { setIsNewNote }, openContentNoteObject: { openContentNote, setOpenContentNote }, darkModeObject: { darkMode } } = useGlobalContext();
+    const { isNewNoteObject: { setIsNewNote }, openContentNoteObject: { openContentNote, setOpenContentNote }, darkModeObject: { darkMode } } = useGlobalContext();
     const [focus, setFocus] = useState(false);
     const textRef = useRef<HTMLTextAreaElement>(null);
 
@@ -296,7 +296,7 @@ function TagsMenu({ onClickedTag }: { onClickedTag: (tag: SingleTagType) => void
 }
 
 function Description({ singleNote, setSingleNote }: { singleNote: singleNoteType | undefined, setSingleNote: React.Dispatch<React.SetStateAction<singleNoteType | undefined>> }) {
-    const { darkModeObject: { darkMode }, allNotesObject: { allNotes, setAllNotes } } = useGlobalContext();
+    const { darkModeObject: { darkMode } } = useGlobalContext();
 
     const [isHovered, setIsHovered] = useState(false);
 
@@ -325,9 +325,6 @@ function Description({ singleNote, setSingleNote }: { singleNote: singleNoteType
 }
 
 function CodeBlock({ singleNote, setSingleNote }: { singleNote: singleNoteType | undefined, setSingleNote: React.Dispatch<React.SetStateAction<singleNoteType | undefined>> }) {
-    const [code, setCode] = useState(`function onLoad(editor) {
-  console.log("i've loaded");
-}`)
 
     const [isHovered, setIsHovered] = useState(false);
     const [isOpened, setIsOpened] = useState(false);

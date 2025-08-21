@@ -4,7 +4,6 @@ import React, { useEffect, useRef, useState } from 'react'
 import { useGlobalContext } from '../../../../../ContextApi';
 import CloseIcon from '@mui/icons-material/Close';
 import { singleNoteType, SingleTagType } from '@/app/Types';
-import { v4 as uuidv4 } from "uuid";
 import toast from 'react-hot-toast';
 import { ErrorOutlineOutlined } from '@mui/icons-material';
 
@@ -25,7 +24,7 @@ const tagSuggestions = [
 
 const AddTagWindow = () => {
 
-    const { openNewTagsWindowObject: { openNewTagsWindow, setOpenNewTagsWindow }, darkModeObject: { darkMode }, allTagsObject: { alltags, setAllTags }, selectedTagToEditObject: { selectedTagToEdit, setSelectedTagToEdit }, allNotesObject: { allNotes, setAllNotes }, shareUserIdObject: {shareUserId} } = useGlobalContext();
+    const { openNewTagsWindowObject: { openNewTagsWindow, setOpenNewTagsWindow }, darkModeObject: { darkMode }, allTagsObject: { alltags, setAllTags }, selectedTagToEditObject: { selectedTagToEdit, setSelectedTagToEdit }, allNotesObject: { allNotes, setAllNotes }, shareUserIdObject: { shareUserId } } = useGlobalContext();
 
     const [tagName, setTagName] = useState("");
     const [errorMessage, setErrorMessage] = useState("");
@@ -55,14 +54,16 @@ const AddTagWindow = () => {
             return;
         }
 
-        if (!alltags.some((tag) => tag.name === tagName)) {
-            if (!selectedTagToEdit) {
-                addNewTagFunction(alltags, setAllTags, setOpenNewTagsWindow, tagName, shareUserId);
-            } else {
-                handleEditTag(alltags, setAllTags, setOpenNewTagsWindow, selectedTagToEdit, setSelectedTagToEdit, tagName, allNotes, setAllNotes);
-            }
-        } else {
+        const isDuplicate = alltags.some(tag => tag.name.toLowerCase() === tagName.toLowerCase());
+        if (isDuplicate && (!selectedTagToEdit || selectedTagToEdit.name.toLowerCase() !== tagName.toLowerCase())) {
             setErrorMessage("Tag already exists!");
+            return;
+        }
+
+        if (!selectedTagToEdit) {
+            addNewTagFunction(setAllTags, setOpenNewTagsWindow, tagName, shareUserId);
+        } else {
+            handleEditTag(alltags, setAllTags, setOpenNewTagsWindow, selectedTagToEdit, setSelectedTagToEdit, tagName, allNotes, setAllNotes);
         }
     };
 
@@ -168,10 +169,11 @@ function ButtonGroup({ onSubmit }: {
     )
 }
 
-async function addNewTagFunction(allTags: SingleTagType[], setAllTags: React.Dispatch<React.SetStateAction<SingleTagType[]>>, setOpenNewTagsWindow: React.Dispatch<React.SetStateAction<boolean>>, tagName: string, shareUserId: string) {
+async function addNewTagFunction(setAllTags: React.Dispatch<React.SetStateAction<SingleTagType[]>>, setOpenNewTagsWindow: React.Dispatch<React.SetStateAction<boolean>>, tagName: string, shareUserId: string) {
+
     const newTag = { name: tagName, clerkUserId: shareUserId };
     try {
-        const response = await fetch("/api/tags",{
+        const response = await fetch("/api/tags", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -179,13 +181,13 @@ async function addNewTagFunction(allTags: SingleTagType[], setAllTags: React.Dis
             body: JSON.stringify(newTag),
         });
 
-        if(!response.ok){
+        if (!response.ok) {
             throw new Error("Failed to add tag");
         }
 
         const data = await response.json();
 
-        if(data.error){
+        if (data.error) {
             throw new Error(data.error);
         }
 
@@ -195,7 +197,7 @@ async function addNewTagFunction(allTags: SingleTagType[], setAllTags: React.Dis
             clerkUserId: data.tags.clerkUserId,
         }
 
-        setAllTags((prevTags) => [...prevTags,addedTag]);
+        setAllTags((prevTags) => [...prevTags, addedTag]);
         setOpenNewTagsWindow(false);
         toast.success("Tag has been added successfully");
     } catch (error) {
@@ -204,40 +206,70 @@ async function addNewTagFunction(allTags: SingleTagType[], setAllTags: React.Dis
     }
 }
 
-function handleEditTag(allTags: SingleTagType[], setAllTags: React.Dispatch<React.SetStateAction<SingleTagType[]>>, setOpenNewTagsWindow: React.Dispatch<React.SetStateAction<boolean>>, selectedTagToEdit: SingleTagType, setSelectedTagToEdit: React.Dispatch<React.SetStateAction<SingleTagType | null>>, tagName: string, allNotes: singleNoteType[], setAllNotes: React.Dispatch<React.SetStateAction<singleNoteType[]>>
+async function handleEditTag(
+    allTags: SingleTagType[],
+    setAllTags: React.Dispatch<React.SetStateAction<SingleTagType[]>>,
+    setOpenNewTagsWindow: React.Dispatch<React.SetStateAction<boolean>>,
+    selectedTagToEdit: SingleTagType,
+    setSelectedTagToEdit: React.Dispatch<React.SetStateAction<SingleTagType | null>>,
+    tagName: string,
+    allNotes: singleNoteType[],
+    setAllNotes: React.Dispatch<React.SetStateAction<singleNoteType[]>>
 ) {
     if (!selectedTagToEdit) return;
 
-    const selectedTagNameLower = selectedTagToEdit.name.toLowerCase();
+    try {
+        // 🔹 Backend API call
+        const response = await fetch(`/api/tags?tagId=${selectedTagToEdit._id}`, {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ name: tagName }),
+        });
 
-    const updatedAllTags = allTags.map(tag =>
-        tag._id === selectedTagToEdit._id
-            ? { ...tag, name: tagName }
-            : tag
-    );
+        if (!response.ok) {
+            throw new Error("Failed to update tag");
+        }
 
-    const updatedAllNotes = allNotes.map(note => {
-        const hasTag = note.tags.some(
-            tag => tag.name.toLowerCase() === selectedTagNameLower
+        const data = await response.json();
+
+        const selectedTagNameLower = selectedTagToEdit.name.toLowerCase();
+
+        // 🔹 Update allTags locally
+        const updatedAllTags = allTags.map(tag =>
+            tag._id === selectedTagToEdit._id
+                ? data.tag
+                : tag
         );
 
-        if (!hasTag) return note;
+        // 🔹 Update allNotes locally
+        const updatedAllNotes = allNotes.map(note => {
+            const hasTag = note.tags.some(
+                tag => tag.name.toLowerCase() === selectedTagNameLower
+            );
 
-        return {
-            ...note,
-            tags: note.tags.map(tag =>
-                tag.name.toLowerCase() === selectedTagNameLower
-                    ? { ...tag, name: tagName }
-                    : tag
-            )
-        };
-    });
+            if (!hasTag) return note;
 
-    setAllTags(() => updatedAllTags);
-    setAllNotes(() => updatedAllNotes);
-    setOpenNewTagsWindow(false);
-    setSelectedTagToEdit(null);
-    toast.success("✅ Tag has been successfully edited!");
+            return {
+                ...note,
+                tags: note.tags.map(tag =>
+                    tag.name.toLowerCase() === selectedTagNameLower
+                        ? { ...tag, name: tagName }
+                        : tag
+                )
+            };
+        });
+
+        setAllTags(updatedAllTags);
+        setAllNotes(updatedAllNotes);
+        setOpenNewTagsWindow(false);
+        setSelectedTagToEdit(null);
+        toast.success("✅ Tag has been successfully edited!");
+    } catch (error) {
+        console.error(error);
+        toast.error("❌ Failed to edit tag");
+    }
 }
 
-export default AddTagWindow
+export default AddTagWindow;

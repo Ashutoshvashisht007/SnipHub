@@ -20,7 +20,7 @@ function SearchBar() {
 }
 
 function AddSnippetButton() {
-    const {openContentNoteObject: {setOpenContentNote}, selectedNoteObject: {setSelectedNote}, isNewNoteObject: {isNewNote, setIsNewNote}, shareUserIdObject: {shareUserId}} = useGlobalContext();
+    const {openContentNoteObject: {setOpenContentNote}, selectedNoteObject: {setSelectedNote}, isNewNoteObject: { setIsNewNote}, shareUserIdObject: {shareUserId}} = useGlobalContext();
 
     const openTheContentNote = (e: React.MouseEvent<HTMLDivElement>) => {
         const newSingleNote = {
@@ -35,8 +35,6 @@ function AddSnippetButton() {
             language: "",
             isTrash: false,
         };
-
-        // setAllNotes([...allNotes,newSingleNote]);
 
         setIsNewNote(true)
         setSelectedNote(newSingleNote);

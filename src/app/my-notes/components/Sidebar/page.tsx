@@ -10,7 +10,7 @@ import { useClerk } from "@clerk/nextjs";
 export default function Sidebar() {
 
     const { darkModeObject: { darkMode },
-        openSideBarObject: { openSidebar, setOpenSidebar } } = useGlobalContext();
+        openSideBarObject: { openSidebar } } = useGlobalContext();
 
     return (
         <div className={`${openSidebar ? "fixed z-50 shadow-lg" : "max-md:hidden"} pr-10 p-6 flex flex-col gap-2 h-screen pt-7 ${darkMode[1].isSelected ? "bg-gray-800" : "bg-white"}`}>
@@ -38,7 +38,7 @@ function Logo() {
 function QuickLinks() {
 
     const { sideBarMenuObject: { sideBarMenu, setSideBarMenu }, tagsAndLogoutMenuObject: {tagsAndLogoutMenu, setTagsAndLogoutMenu},
-openTagsWindowObject: {openTagsWindow, setOpenTagsWindow} } = useGlobalContext();
+openTagsWindowObject: { setOpenTagsWindow} } = useGlobalContext();
     
     const { signOut } = useClerk(); 
 
