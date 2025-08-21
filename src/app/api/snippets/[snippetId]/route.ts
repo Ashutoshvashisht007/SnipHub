@@ -2,18 +2,22 @@ import connect from "@/app/lib/connect";
 import SingleSnippet from "@/app/Models/SnippetSchema";
 import { NextRequest, NextResponse } from "next/server";
 
+type Params = {
+  snippetId: string;
+}
+
 export async function PUT(
   req: NextRequest,
-  context: { params: { snippetId: string } }
+  { params }: { params: Promise<Params> }
 ) {
-  const { params } = context;
   try {
+    const { snippetId } = await params;
     const body = await req.json();
 
     await connect();
 
     const updatedNote = await SingleSnippet.findByIdAndUpdate(
-      params.snippetId,
+      snippetId,
       body,
       { new: true }
     );
@@ -32,13 +36,13 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  context: { params: { snippetId: string } }
+  { params }: { params: Promise<Params> }
 ) {
-  const { params } = context;
   try {
+    const { snippetId } = await params;
     await connect();
 
-    const deletedNote = await SingleSnippet.findByIdAndDelete(params.snippetId);
+    const deletedNote = await SingleSnippet.findByIdAndDelete(snippetId);
 
     if (!deletedNote) {
       return NextResponse.json(
